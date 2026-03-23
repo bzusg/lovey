@@ -336,7 +336,14 @@
             }
             container.innerHTML = html;
         }
-        function switchContact(id) { appState.activeId = id; save(); applyUI(); renderChat(); toggleDrawer(); }
+        function switchContact(id) { 
+            appState.activeId = id; 
+            currentChat = appState.chats[id]; // 核心修复：把大脑切换到当前联系人！
+            save(); 
+            applyUI(); 
+            renderChat(); 
+            toggleDrawer(); 
+        }
         function createNewContact() {
             const newName = prompt("给新的空间起个名字：");
             if (newName) {
@@ -353,7 +360,9 @@
             if (p.paused) { 
                 if (currentChat.bgmList && currentChat.bgmList.length > 0) { 
                     p.src = currentChat.bgmList[Math.floor(Math.random() * currentChat.bgmList.length)];
-                    p.play().then(() => s.classList.add('music-playing')).catch(() => { alert("网页限制，请先点击屏幕任意处") }); 
+                    p.play().then(() => s.classList.add('music-playing')).catch((e) => { 
+                        alert("🎵 播放失败惹！请检查：\n1. 链接必须是 https:// 开头\n2. 链接前后不能有空格"); 
+                    }); 
                 } else { alert("请在设置中填入至少一个 MP3 链接作为歌单哦~"); toggleDrawer(); }
             } else { p.pause(); s.classList.remove('music-playing'); }
         }
