@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Lovey Space</title>
-   <link rel="stylesheet" href="https://cdn.staticfile.net/lxgw-wenkai-webfont/1.6.0/style.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.net/lxgw-wenkai-webfont/1.6.0/style.css">
     <style>
         :root {
             --primary-color: #f1f5f6; --secondary-color: #d2e6ec; --accent-color: #d1d1d1;
@@ -16,7 +16,6 @@
         body {
             background: var(--primary-color) no-repeat center center fixed; background-size: cover;
             font-family: "LXGW WenKai", "PingFang SC", sans-serif; color: var(--text-color);
-            /* 核心修复：引入 dvh (动态视口高度)，完美解决手机浏览器遮挡 */
             height: 100vh; height: 100dvh; 
             display: flex; flex-direction: column; overflow: hidden; transition: background 0.4s;
         }
@@ -36,7 +35,6 @@
         .music-playing { animation: rotate 3s linear infinite; fill: var(--highlight); }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* 给聊天区底部留出足够且精准的空间 */
         #chat-window { flex: 1; margin-top: 95px; padding: 20px 20px 120px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
         .msg-row { display: flex; align-items: flex-start; gap: 10px; max-width: 88%; }
         .row-self { flex-direction: row-reverse; align-self: flex-end; }
@@ -47,20 +45,20 @@
         .img-content { max-width: 140px; border-radius: 10px; display: block; }
 
         footer { height: 70px; background: rgba(241, 245, 246, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--secondary-color); position: fixed; bottom: 0; width: 100%; display: flex; padding: 0 15px; align-items: center; gap: 12px; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
-        #msg-input { flex: 1; height: 40px; border: none; border-radius: 20px; padding: 0 15px; background: rgba(255, 255, 255, 0.5); outline: none; font-size: 16px; }
+        #msg-input { flex: 1; height: 40px; border: none; border-radius: 20px; padding: 0 15px; background: rgba(255, 255, 255, 0.5); outline: none; font-size: 16px; font-family: "LXGW WenKai", sans-serif; }
 
         #library-drawer { position: fixed; bottom: -90%; left: 0; width: 100%; height: 85%; background: #f1f5f6; z-index: 500; border-top: 1px solid var(--secondary-color); transition: 0.3s; display: flex; flex-direction: column; padding: 20px; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
         #library-drawer.open { bottom: 0; }
         .drawer-tabs { display: flex; justify-content: space-between; border-bottom: 1px solid var(--secondary-color); padding-bottom: 10px; }
-        .tab-btn { background: none; border: none; color: var(--light-text); cursor: pointer; font-size: 13px; padding: 5px; }
+        .tab-btn { background: none; border: none; color: var(--light-text); cursor: pointer; font-size: 13px; padding: 5px; font-family: "LXGW WenKai", sans-serif; }
         .tab-btn.active { color: var(--highlight); font-weight: bold; border-bottom: 2px solid var(--highlight); }
         .tab-content { display: none; padding-top: 15px; flex: 1; overflow-y: auto; }
         .tab-content.active { display: block; }
         
-        .setting-input { width: 100%; padding: 10px; border: 1px solid var(--secondary-color); border-radius: 8px; margin-bottom: 10px; font-size: 14px; background: white; outline: none; }
-        .btn-main { width: 100%; padding: 12px; background: var(--highlight); color: white; border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; }
-        .btn-sub { width: 100%; padding: 12px; background: var(--secondary-color); color: var(--text-color); border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; }
-        .btn-danger { width: 100%; padding: 12px; background: #e1b2b2; color: white; border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; opacity: 0.8; }
+        .setting-input { width: 100%; padding: 10px; border: 1px solid var(--secondary-color); border-radius: 8px; margin-bottom: 10px; font-size: 14px; background: white; outline: none; font-family: "LXGW WenKai", sans-serif; }
+        .btn-main { width: 100%; padding: 12px; background: var(--highlight); color: white; border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; font-family: "LXGW WenKai", sans-serif; }
+        .btn-sub { width: 100%; padding: 12px; background: var(--secondary-color); color: var(--text-color); border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; font-family: "LXGW WenKai", sans-serif; }
+        .btn-danger { width: 100%; padding: 12px; background: #e1b2b2; color: white; border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; opacity: 0.8; font-family: "LXGW WenKai", sans-serif; }
         
         .emoji-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         .emoji-box { position: relative; width: 100%; aspect-ratio: 1; border-radius: 8px; background: center/cover; cursor: pointer; }
@@ -74,6 +72,8 @@
 </head>
 <body>
     <audio id="bgm-player" loop></audio>
+    <audio id="notify-player"></audio>
+    
     <header>
         <div class="info-center" onclick="editPartnerName()">
             <div id="header-avatar" class="avatar" onclick="event.stopPropagation(); triggerAvatarChange('other')"></div>
@@ -92,14 +92,14 @@
         <div onclick="toggleDrawer()" style="cursor:pointer; font-size:26px; color:var(--light-text); padding:0 5px;">+</div>
         <div id="footer-self-avatar" class="mini-avatar" onclick="triggerAvatarChange('self')"></div>
         <input type="text" id="msg-input" placeholder="输入消息..." autocomplete="off">
-        <button id="send-btn" style="background:none; border:none; color:var(--highlight); font-weight:bold; cursor:pointer; font-size:15px;">发送</button>
+        <button id="send-btn" style="background:none; border:none; color:var(--highlight); font-weight:bold; cursor:pointer; font-size:15px; font-family: 'LXGW WenKai', sans-serif;">发送</button>
     </footer>
 
     <div id="library-drawer">
         <div class="drawer-tabs">
             <button class="tab-btn active" onclick="switchTab('contacts')">👥 空间</button>
             <button class="tab-btn" onclick="switchTab('words')">📝 字卡</button>
-            <button class="tab-btn" onclick="switchTab('emojis')">🎨 表情(全局)</button>
+            <button class="tab-btn" onclick="switchTab('emojis')">🎨 表情</button>
             <button class="tab-btn" onclick="switchTab('settings')">⚙️ 设置</button>
             <button class="tab-btn" onclick="toggleDrawer()" style="color:var(--text-color)">▼</button>
         </div>
@@ -119,7 +119,7 @@
         </div>
 
         <div id="tab-emojis" class="tab-content">
-            <p style="font-size:12px; color:var(--light-text); margin-bottom:10px;">✨ 这里的表情库是所有联系人通用的哦</p>
+            <p style="font-size:12px; color:var(--light-text); margin-bottom:10px;">✨ 全局共享表情库</p>
             <div style="display:flex; gap:5px; margin-bottom:10px;">
                 <input type="text" id="emoji-url-input" class="setting-input" style="margin:0;" placeholder="贴入图床表情链接 (.jpg/.png)">
                 <button class="btn-main" style="width:auto; padding:0 15px; margin:0;" onclick="addEmojiUrl()">添加</button>
@@ -130,7 +130,25 @@
         </div>
 
         <div id="tab-settings" class="tab-content">
-            <p style="font-size:12px; color:var(--highlight); margin-bottom:5px;">⏳ 对方思考时间 (秒)：</p>
+            <p style="font-size:12px; color:var(--highlight); margin-bottom:5px;">🎁 惊喜掉落 & 离线留言：</p>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px; background:white; padding:10px; border-radius:8px; border:1px solid var(--secondary-color);">
+                <label style="font-size:14px; flex:1; display:flex; align-items:center; gap:5px;">
+                    <input type="checkbox" id="random-drop-cb" onchange="updateRandomDrop(this.checked)"> 允许对方随时打扰
+                </label>
+                <div style="font-size:12px; color:var(--light-text); display:flex; align-items:center; gap:5px;">
+                    平均每 <input type="number" id="drop-freq-input" class="setting-input" style="width:50px; margin:0; padding:5px; text-align:center;" onchange="updateDropFreq(this.value)" min="1"> 分钟
+                </div>
+            </div>
+
+            <p style="font-size:12px; color:var(--light-text); margin-bottom:5px;">🔔 消息提示音 (MP3链接)：</p>
+            <div style="display:flex; gap:5px; margin-bottom:15px;">
+                <input type="text" id="notify-url-input" class="setting-input" style="margin:0;" onchange="updateNotifyUrl(this.value)" placeholder="留空则静音...">
+                <button onclick="testNotify()" class="btn-sub" style="width:auto; margin:0; padding:0 15px;">测音</button>
+            </div>
+
+            <hr style="border:0; border-top:1px dashed var(--secondary-color); margin-bottom:15px;">
+
+            <p style="font-size:12px; color:var(--highlight); margin-bottom:5px;">⏳ 你发消息后，对方思考时间 (秒)：</p>
             <input type="number" id="speed-input" class="setting-input" onchange="updateSpeed(this.value)" placeholder="输入秒数，默认 10 秒" min="1" max="60">
 
             <p style="font-size:12px; color:var(--light-text); margin-bottom:5px; margin-top:10px;">专属全屏壁纸 (图床链接)：</p>
@@ -153,52 +171,109 @@
             selfAvatar: '',
             activeId: 'chat_1',
             globalEmojis: [],
+            lastLeaveTime: Date.now(), // 隐形秒表
             chats: {
                 'chat_1': {
                     name: 'Lovey', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [],
                     words: ["亲爱的/宝宝", "晚安好梦", "下雨了", "今天有淡淡的栀子花香呢", "抱抱/贴贴/亲亲"],
-                    replySpeed: 10
+                    replySpeed: 10, randomDrop: false, dropFreq: 5, notifyUrl: 'https://cdn.pixabay.com/audio/2021/08/04/audio_bb630cc098.mp3'
                 }
             }
         };
 
         let currentChat = null; 
         let isTyping = false; 
+        let isAppReady = false; 
+        let dropTimer = null;
 
         function init() {
             const saved = localStorage.getItem('lovey_v5_state');
             if (saved) { 
                 appState = JSON.parse(saved); 
                 if (!appState.globalEmojis) appState.globalEmojis = [];
+                if (!appState.lastLeaveTime) appState.lastLeaveTime = Date.now();
                 
                 const chatNames = Object.values(appState.chats).map(c => c.name);
-                if (!chatNames.includes('四哥')) {
-                    appState.chats['chat_sige'] = {
-                        name: '四哥', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [],
-                        words: ["四哥在呢", "过来", "今天乖不乖？"], replySpeed: 10
-                    };
-                }
-                if (!chatNames.includes('一与')) {
-                    appState.chats['chat_yiyu'] = {
-                        name: '一与', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [],
-                        words: ["贴贴~", "一起去玩吧！"], replySpeed: 5
-                    };
-                }
+                if (!chatNames.includes('四哥')) { appState.chats['chat_sige'] = { name: '四哥', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [], words: ["四哥在呢", "过来", "今天乖不乖？"], replySpeed: 10 }; }
+                if (!chatNames.includes('一与')) { appState.chats['chat_yiyu'] = { name: '一与', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [], words: ["贴贴~", "一起去玩吧！"], replySpeed: 5 }; }
+                
                 Object.values(appState.chats).forEach(c => {
                     if (c.bgmUrl && !c.bgmList) c.bgmList = [c.bgmUrl];
                     if (!c.bgmList) c.bgmList = [];
                     if (c.replySpeed === undefined) c.replySpeed = 10; 
+                    if (c.randomDrop === undefined) c.randomDrop = false;
+                    if (c.dropFreq === undefined) c.dropFreq = 5;
+                    if (c.notifyUrl === undefined) c.notifyUrl = 'https://cdn.pixabay.com/audio/2021/08/04/audio_bb630cc098.mp3';
                 });
             }
             if (!appState.chats[appState.activeId]) appState.activeId = Object.keys(appState.chats)[0];
             currentChat = appState.chats[appState.activeId];
-            applyUI(); renderChat();
+            
+            // 核心：处理离线期间错过的未读消息
+            processOfflineMessages();
+            
+            applyUI(); 
+            renderChat();
+            
+            setTimeout(() => { 
+                isAppReady = true; 
+                startDropTimer(); 
+            }, 1000);
         }
 
-        function save() { try { localStorage.setItem('lovey_v5_state', JSON.stringify(appState)); } catch(e) { alert("内存满了！请使用图床链接代替本地上传。"); } }
+        function save() { 
+            appState.lastLeaveTime = Date.now(); // 每次存盘更新秒表
+            try { localStorage.setItem('lovey_v5_state', JSON.stringify(appState)); } catch(e) { alert("内存满了！请使用图床链接。"); } 
+        }
+
+        // --- 核心：时光倒流/离线留言引擎 ---
+        function processOfflineMessages() {
+            if (!currentChat.randomDrop || !appState.lastLeaveTime) return;
+            const now = Date.now();
+            const awayMs = now - appState.lastLeaveTime;
+            const freqMs = (currentChat.dropFreq || 5) * 60 * 1000;
+
+            // 只有离开超过 2 分钟才有可能触发离线补偿
+            if (awayMs > 120000) {
+                // 计算离线期间大概错过了几次掉落（最多补偿3条，防刷屏）
+                let missedDrops = Math.floor(awayMs / freqMs);
+                if (missedDrops === 0 && Math.random() < 0.4) missedDrops = 1; 
+                missedDrops = Math.min(3, missedDrops);
+
+                if (missedDrops > 0) {
+                    const pool = [...currentChat.words.map(w=>({t:w,i:false})), ...appState.globalEmojis.map(e=>({t:e,i:true}))];
+                    if(pool.length > 0) {
+                        for(let i=0; i<missedDrops; i++) {
+                            const item = pool[Math.floor(Math.random()*pool.length)];
+                            const fakeTime = appState.lastLeaveTime + Math.floor(Math.random() * awayMs);
+                            currentChat.messages.push({ text: item.t, isImg: item.i, type: 'other', id: fakeTime });
+                        }
+                        // 按时间轴重新排序
+                        currentChat.messages.sort((a,b) => a.id - b.id);
+                        // 切回来时响一声提示音制造惊喜
+                        setTimeout(() => playNotifySound(), 1500);
+                    }
+                }
+            }
+            appState.lastLeaveTime = now;
+        }
+
+        // --- 核心：精准捕捉你切出后台的瞬间 ---
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === 'hidden') {
+                // 网页被锁屏/切走，记下时间
+                appState.lastLeaveTime = Date.now();
+                save();
+            } else {
+                // 网页被重新打开！触发时光倒流引擎
+                processOfflineMessages();
+                renderChat();
+                appState.lastLeaveTime = Date.now();
+                save();
+            }
+        });
 
         function applyUI() {
-            currentChat = appState.chats[appState.activeId];
             document.getElementById('display-name').innerText = currentChat.name;
             document.title = currentChat.name;
             document.getElementById('header-avatar').style.backgroundImage = `url(${currentChat.avatar})`;
@@ -208,6 +283,11 @@
             document.getElementById('bgm-list-input').value = (currentChat.bgmList || []).join('\n');
             document.getElementById('date-input').value = currentChat.startDate;
             document.getElementById('speed-input').value = currentChat.replySpeed;
+            
+            document.getElementById('random-drop-cb').checked = currentChat.randomDrop;
+            document.getElementById('drop-freq-input').value = currentChat.dropFreq;
+            document.getElementById('notify-url-input').value = currentChat.notifyUrl || '';
+            document.getElementById('notify-player').src = currentChat.notifyUrl || '';
             
             const diff = Math.floor(Math.abs(new Date() - new Date(currentChat.startDate)) / (1000*60*60*24)) + 1;
             document.getElementById('memorial-days').innerText = `第 ${diff} 天`;
@@ -219,6 +299,28 @@
             document.getElementById('music-svg').classList.remove('music-playing');
             document.getElementById('status-text').innerText = "在线";
             isTyping = false;
+            
+            startDropTimer();
+        }
+
+        function updateRandomDrop(val) { currentChat.randomDrop = val; save(); startDropTimer(); }
+        function updateDropFreq(val) { currentChat.dropFreq = Math.max(1, parseInt(val)||5); save(); }
+        function updateNotifyUrl(val) { currentChat.notifyUrl = val; document.getElementById('notify-player').src = val; save(); }
+        function testNotify() { document.getElementById('notify-player').play().catch(()=>{alert('系统限制，请先点击一下屏幕任意位置哦~')}); }
+
+        function playNotifySound() {
+            if (!isAppReady || !currentChat.notifyUrl) return;
+            const p = document.getElementById('notify-player');
+            p.currentTime = 0;
+            p.play().catch(()=>{});
+        }
+
+        function startDropTimer() {
+            if (dropTimer) clearInterval(dropTimer);
+            dropTimer = setInterval(() => {
+                if (!currentChat || !currentChat.randomDrop || isTyping || document.visibilityState === 'hidden') return;
+                if (Math.random() < (1 / currentChat.dropFreq)) { autoReply(true); }
+            }, 60000); 
         }
 
         function renderContactList() {
@@ -239,55 +341,37 @@
             const newName = prompt("给新的空间起个名字：");
             if (newName) {
                 const newId = 'chat_' + Date.now();
-                appState.chats[newId] = { name: newName, avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [], words: ["你好呀！"], replySpeed: 10 };
+                appState.chats[newId] = { name: newName, avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [], words: ["你好呀！"], replySpeed: 10, randomDrop: false, dropFreq: 5, notifyUrl: 'https://cdn.pixabay.com/audio/2021/08/04/audio_bb630cc098.mp3' };
                 appState.activeId = newId; save(); applyUI(); renderChat();
             }
         }
 
-        function updateSpeed(val) {
-            let speed = parseInt(val);
-            if(isNaN(speed) || speed < 0) speed = 10;
-            currentChat.replySpeed = speed;
-            save();
-        }
-
-        function updateBgmList() {
-            const lines = document.getElementById('bgm-list-input').value.split('\n');
-            currentChat.bgmList = lines.map(l => l.trim()).filter(l => l);
-            save();
-        }
-
+        function updateSpeed(val) { let speed = parseInt(val); if(isNaN(speed) || speed < 0) speed = 10; currentChat.replySpeed = speed; save(); }
+        function updateBgmList() { const lines = document.getElementById('bgm-list-input').value.split('\n'); currentChat.bgmList = lines.map(l => l.trim()).filter(l => l); save(); }
         function toggleMusic() { 
             const p = document.getElementById('bgm-player'); const s = document.getElementById('music-svg');
             if (p.paused) { 
                 if (currentChat.bgmList && currentChat.bgmList.length > 0) { 
-                    const randomSong = currentChat.bgmList[Math.floor(Math.random() * currentChat.bgmList.length)];
-                    p.src = randomSong;
+                    p.src = currentChat.bgmList[Math.floor(Math.random() * currentChat.bgmList.length)];
                     p.play().then(() => s.classList.add('music-playing')).catch(() => { alert("网页限制，请先点击屏幕任意处") }); 
                 } else { alert("请在设置中填入至少一个 MP3 链接作为歌单哦~"); toggleDrawer(); }
             } else { p.pause(); s.classList.remove('music-playing'); }
         }
 
         function batchAddWords() {
-            const lines = document.getElementById('batch-word-input').value.split('\n');
-            let count = 0;
+            const lines = document.getElementById('batch-word-input').value.split('\n'); let count = 0;
             lines.forEach(line => { if (line.trim()) { currentChat.words.push(line.trim()); count++; } });
             if (count > 0) { document.getElementById('batch-word-input').value = ''; save(); renderWordList(); alert(`添加了 ${count} 个词条！`); }
         }
         function renderWordList() { document.getElementById('word-list').innerHTML = currentChat.words.map((w, i) => `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; font-size:13px"><span>${w}</span><span style="color:#cc8888; cursor:pointer" onclick="currentChat.words.splice(${i},1);save();renderWordList()">删除</span></div>`).join(''); }
         function clearWords() { if (confirm(`清空 ${currentChat.name} 的专属字卡吗？`)) { currentChat.words = []; save(); renderWordList(); } }
 
-        function addEmojiUrl() {
-            const url = document.getElementById('emoji-url-input').value.trim();
-            if(url) { appState.globalEmojis.push(url); document.getElementById('emoji-url-input').value = ''; save(); renderEmojiList(); }
-        }
+        function addEmojiUrl() { const url = document.getElementById('emoji-url-input').value.trim(); if(url) { appState.globalEmojis.push(url); document.getElementById('emoji-url-input').value = ''; save(); renderEmojiList(); } }
 
         document.getElementById('emoji-file').onchange = async function(e) {
             const files = e.target.files; if (files.length === 0) return;
             document.getElementById('emoji-list').innerHTML = "<p style='font-size:12px;color:var(--highlight);'>处理中...</p>";
-            for (let i = 0; i < files.length; i++) {
-                try { const base64 = await compressImage(files[i]); appState.globalEmojis.push(base64); } catch (err) {}
-            }
+            for (let i = 0; i < files.length; i++) { try { const base64 = await compressImage(files[i]); appState.globalEmojis.push(base64); } catch (err) {} }
             save(); renderEmojiList();
         };
 
@@ -306,15 +390,13 @@
             });
         }
 
-        function renderEmojiList() {
-            document.getElementById('emoji-list').innerHTML = appState.globalEmojis.map((img, i) => `<div class="emoji-box" style="background-image:url(${img})" onclick="sendMsg('${img}',true)"><div class="del-badge" onclick="event.stopPropagation(); appState.globalEmojis.splice(${i},1);save();renderEmojiList()">×</div></div>`).join('');
-        }
+        function renderEmojiList() { document.getElementById('emoji-list').innerHTML = appState.globalEmojis.map((img, i) => `<div class="emoji-box" style="background-image:url(${img})" onclick="sendMsg('${img}',true)"><div class="del-badge" onclick="event.stopPropagation(); appState.globalEmojis.splice(${i},1);save();renderEmojiList()">×</div></div>`).join(''); }
         function clearEmojis() { if (confirm(`确定要清空全局表情库吗？`)) { appState.globalEmojis = []; save(); renderEmojiList(); } }
 
         function sendMsg(text, isImg=false, type='self') {
             const msg = { text, isImg, type, id: Date.now() };
             currentChat.messages.push(msg); renderSingleMsg(msg); save();
-            if(type === 'self') autoReply();
+            if(type === 'self') autoReply(false); 
         }
 
         function renderSingleMsg(m) {
@@ -325,17 +407,19 @@
             const content = m.isImg ? `<img src="${m.text}" class="img-content" onload="scrollToBottom()">` : `<span>${m.text}</span>`;
             row.innerHTML = m.type==='self' ? `<div class="bubble">${content}</div>${av}` : `${av}<div class="bubble">${content}</div>`;
             win.appendChild(row); scrollToBottom();
+            
+            if (m.type === 'other') { playNotifySound(); }
         }
 
-        function autoReply() {
+        function autoReply(isUnprompted = false) {
             if (isTyping) return; 
             const pool = [...currentChat.words.map(w=>({t:w,i:false})), ...appState.globalEmojis.map(e=>({t:e,i:true}))];
             if(!pool.length) return;
             
             isTyping = true;
-            document.getElementById('status-text').innerText = "正在输入中...";
+            document.getElementById('status-text').innerText = "对方正在输入...";
             
-            const speedMs = (currentChat.replySpeed || 10) * 1000;
+            const speedMs = isUnprompted ? 2000 : (currentChat.replySpeed || 10) * 1000;
             
             setTimeout(() => {
                 const replyCount = Math.floor(Math.random() * 5) + 1;
@@ -354,7 +438,7 @@
                     sentCount++;
 
                     if (sentCount < replyCount) {
-                        document.getElementById('status-text').innerText = "正在输入中...";
+                        document.getElementById('status-text').innerText = "对方正在输入...";
                         setTimeout(sendNext, Math.floor(Math.random() * 1500) + 1500);
                     } else {
                         document.getElementById('status-text').innerText = "在线";
@@ -368,14 +452,7 @@
         }
 
         function renderChat() { document.getElementById('chat-window').innerHTML = ''; currentChat.messages.forEach(renderSingleMsg); }
-        
-        /* 核心修复：更智能地将内容滚动到视野中间，并且增加小延迟确保渲染完毕 */
-        function scrollToBottom() { 
-            const c = document.getElementById('chat-window'); 
-            setTimeout(() => {
-                c.scrollTo({ top: c.scrollHeight + 200, behavior: 'smooth' });
-            }, 50); 
-        }
+        function scrollToBottom() { const c = document.getElementById('chat-window'); setTimeout(() => { c.scrollTo({ top: c.scrollHeight + 200, behavior: 'smooth' }); }, 50); }
 
         function editPartnerName() { const n = prompt("名字：", currentChat.name); if(n && n.trim()) { currentChat.name = n.trim(); applyUI(); save(); } }
         function updateDate(d) { currentChat.startDate = d; save(); applyUI(); }
