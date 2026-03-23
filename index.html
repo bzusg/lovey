@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Lovey Space</title>
+   <link rel="stylesheet" href="https://cdn.staticfile.net/lxgw-wenkai-webfont/1.6.0/style.css">
     <style>
         :root {
             --primary-color: #f1f5f6; --secondary-color: #d2e6ec; --accent-color: #d1d1d1;
@@ -11,11 +12,15 @@
             --message-self: rgba(241, 214, 214, 0.85); --message-other: rgba(219, 229, 241, 0.85);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
         body {
             background: var(--primary-color) no-repeat center center fixed; background-size: cover;
-            font-family: "PingFang SC", sans-serif; color: var(--text-color);
-            height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: background 0.4s;
+            font-family: "LXGW WenKai", "PingFang SC", sans-serif; color: var(--text-color);
+            /* 核心修复：引入 dvh (动态视口高度)，完美解决手机浏览器遮挡 */
+            height: 100vh; height: 100dvh; 
+            display: flex; flex-direction: column; overflow: hidden; transition: background 0.4s;
         }
+        
         header {
             height: 95px; background: rgba(241, 245, 246, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--secondary-color); position: fixed; top: 0; width: 100%; z-index: 100;
@@ -31,8 +36,8 @@
         .music-playing { animation: rotate 3s linear infinite; fill: var(--highlight); }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* 修复底部遮挡：将 padding-bottom 增加到了 150px */
-        #chat-window { flex: 1; margin-top: 95px; padding: 20px 20px 150px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+        /* 给聊天区底部留出足够且精准的空间 */
+        #chat-window { flex: 1; margin-top: 95px; padding: 20px 20px 120px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
         .msg-row { display: flex; align-items: flex-start; gap: 10px; max-width: 88%; }
         .row-self { flex-direction: row-reverse; align-self: flex-end; }
         .mini-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: var(--accent-color) center/cover; }
@@ -152,7 +157,7 @@
                 'chat_1': {
                     name: 'Lovey', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [],
                     words: ["亲爱的/宝宝", "晚安好梦", "下雨了", "今天有淡淡的栀子花香呢", "抱抱/贴贴/亲亲"],
-                    replySpeed: 10 // 默认 10 秒
+                    replySpeed: 10
                 }
             }
         };
@@ -182,7 +187,7 @@
                 Object.values(appState.chats).forEach(c => {
                     if (c.bgmUrl && !c.bgmList) c.bgmList = [c.bgmUrl];
                     if (!c.bgmList) c.bgmList = [];
-                    if (c.replySpeed === undefined) c.replySpeed = 10; // 兼容旧数据
+                    if (c.replySpeed === undefined) c.replySpeed = 10; 
                 });
             }
             if (!appState.chats[appState.activeId]) appState.activeId = Object.keys(appState.chats)[0];
@@ -202,8 +207,6 @@
             document.getElementById('wallpaper-url-input').value = currentChat.wallpaper || '';
             document.getElementById('bgm-list-input').value = (currentChat.bgmList || []).join('\n');
             document.getElementById('date-input').value = currentChat.startDate;
-            
-            // 更新速度输入框
             document.getElementById('speed-input').value = currentChat.replySpeed;
             
             const diff = Math.floor(Math.abs(new Date() - new Date(currentChat.startDate)) / (1000*60*60*24)) + 1;
@@ -324,7 +327,6 @@
             win.appendChild(row); scrollToBottom();
         }
 
-        // --- 核心更新：1~5条随机连发引擎 ---
         function autoReply() {
             if (isTyping) return; 
             const pool = [...currentChat.words.map(w=>({t:w,i:false})), ...appState.globalEmojis.map(e=>({t:e,i:true}))];
@@ -333,11 +335,9 @@
             isTyping = true;
             document.getElementById('status-text').innerText = "正在输入中...";
             
-            // 获取你设置的专属速度
             const speedMs = (currentChat.replySpeed || 10) * 1000;
             
             setTimeout(() => {
-                // 决定这次要发几条消息（1到5条）
                 const replyCount = Math.floor(Math.random() * 5) + 1;
                 let sentCount = 0;
 
@@ -353,7 +353,6 @@
                     currentChat.messages.push(msg); renderSingleMsg(msg); save();
                     sentCount++;
 
-                    // 如果还没发完，停顿 1.5 到 3 秒后再发下一条
                     if (sentCount < replyCount) {
                         document.getElementById('status-text').innerText = "正在输入中...";
                         setTimeout(sendNext, Math.floor(Math.random() * 1500) + 1500);
@@ -369,7 +368,14 @@
         }
 
         function renderChat() { document.getElementById('chat-window').innerHTML = ''; currentChat.messages.forEach(renderSingleMsg); }
-        function scrollToBottom() { const c = document.getElementById('chat-window'); c.scrollTop = c.scrollHeight; }
+        
+        /* 核心修复：更智能地将内容滚动到视野中间，并且增加小延迟确保渲染完毕 */
+        function scrollToBottom() { 
+            const c = document.getElementById('chat-window'); 
+            setTimeout(() => {
+                c.scrollTo({ top: c.scrollHeight + 200, behavior: 'smooth' });
+            }, 50); 
+        }
 
         function editPartnerName() { const n = prompt("名字：", currentChat.name); if(n && n.trim()) { currentChat.name = n.trim(); applyUI(); save(); } }
         function updateDate(d) { currentChat.startDate = d; save(); applyUI(); }
