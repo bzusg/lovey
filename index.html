@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Lovey Space</title>
+    <style>
+        :root {
+            --primary-color: #f1f5f6; --secondary-color: #d2e6ec; --accent-color: #d1d1d1;
+            --text-color: #5a5a5a; --light-text: #8a8a8a; --highlight: #e1b2b2;
+            --message-self: rgba(241, 214, 214, 0.85); --message-other: rgba(219, 229, 241, 0.85);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            background: var(--primary-color) no-repeat center center fixed; background-size: cover;
+            font-family: "PingFang SC", sans-serif; color: var(--text-color);
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: background 0.4s;
+        }
+        header {
+            height: 95px; background: rgba(241, 245, 246, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--secondary-color); position: fixed; top: 0; width: 100%; z-index: 100;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .info-center { text-align: center; cursor: pointer; min-width: 150px; padding: 5px; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-color) center/cover; margin: 0 auto 4px; border: 1px solid rgba(255,255,255,0.5); }
+        .name { font-size: 14px; letter-spacing: 1px; font-weight: bold; }
+        .days-tag { font-size: 9px; color: var(--highlight); background: rgba(225, 178, 178, 0.15); padding: 1px 6px; border-radius: 10px; margin-top: 2px; display: inline-block; }
+        .status { font-size: 10px; color: var(--light-text); margin-top: 2px; }
+        .music-toggle { position: absolute; right: 20px; cursor: pointer; padding: 10px; }
+        .music-icon { width: 20px; height: 20px; fill: var(--light-text); }
+        .music-playing { animation: rotate 3s linear infinite; fill: var(--highlight); }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        #chat-window { flex: 1; margin-top: 95px; padding: 20px 20px 110px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+        .msg-row { display: flex; align-items: flex-start; gap: 10px; max-width: 88%; }
+        .row-self { flex-direction: row-reverse; align-self: flex-end; }
+        .mini-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: var(--accent-color) center/cover; }
+        .bubble { padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.6; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); box-shadow: 0 2px 5px rgba(0,0,0,0.02); word-wrap: break-word; }
+        .self .bubble { background: var(--message-self); border-top-right-radius: 2px; }
+        .other .bubble { background: var(--message-other); border-top-left-radius: 2px; }
+        .img-content { max-width: 140px; border-radius: 10px; display: block; }
+
+        footer { height: 70px; background: rgba(241, 245, 246, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--secondary-color); position: fixed; bottom: 0; width: 100%; display: flex; padding: 0 15px; align-items: center; gap: 12px; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
+        #msg-input { flex: 1; height: 40px; border: none; border-radius: 20px; padding: 0 15px; background: rgba(255, 255, 255, 0.5); outline: none; font-size: 16px; }
+
+        #library-drawer { position: fixed; bottom: -90%; left: 0; width: 100%; height: 85%; background: #f1f5f6; z-index: 500; border-top: 1px solid var(--secondary-color); transition: 0.3s; display: flex; flex-direction: column; padding: 20px; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
+        #library-drawer.open { bottom: 0; }
+        .drawer-tabs { display: flex; justify-content: space-between; border-bottom: 1px solid var(--secondary-color); padding-bottom: 10px; }
+        .tab-btn { background: none; border: none; color: var(--light-text); cursor: pointer; font-size: 13px; padding: 5px; }
+        .tab-btn.active { color: var(--highlight); font-weight: bold; border-bottom: 2px solid var(--highlight); }
+        .tab-content { display: none; padding-top: 15px; flex: 1; overflow-y: auto; }
+        .tab-content.active { display: block; }
+        
+        .setting-input { width: 100%; padding: 10px; border: 1px solid var(--secondary-color); border-radius: 8px; margin-bottom: 10px; font-size: 14px; background: white; outline: none; }
+        .btn-main { width: 100%; padding: 12px; background: var(--highlight); color: white; border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; }
+        .btn-sub { width: 100%; padding: 12px; background: var(--secondary-color); color: var(--text-color); border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; }
+        .btn-danger { width: 100%; padding: 12px; background: #e1b2b2; color: white; border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; opacity: 0.8; }
+        
+        .emoji-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .emoji-box { position: relative; width: 100%; aspect-ratio: 1; border-radius: 8px; background: center/cover; cursor: pointer; }
+        .del-badge { position: absolute; top: -5px; right: -5px; background: rgba(200,100,100,0.8); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; text-align: center; line-height: 18px; }
+
+        .contact-item { display: flex; align-items: center; padding: 12px; background: white; border-radius: 10px; margin-bottom: 10px; cursor: pointer; border: 1px solid var(--secondary-color); }
+        .contact-item.active { border-color: var(--highlight); background: rgba(225, 178, 178, 0.05); }
+
+        #wallpaper-file, #emoji-file, #avatar-file { display: none; }
+    </style>
+</head>
+<body>
+    <audio id="bgm-player" loop></audio>
+    <header>
+        <div class="info-center" onclick="editPartnerName()">
+            <div id="header-avatar" class="avatar" onclick="event.stopPropagation(); triggerAvatarChange('other')"></div>
+            <div id="display-name" class="name">Lovey</div>
+            <div id="memorial-days" class="days-tag">第 1 天</div>
+            <div id="status-text" class="status">在线</div>
+        </div>
+        <div class="music-toggle" onclick="toggleMusic()" title="点击播放随机盲盒音乐">
+            <svg id="music-svg" class="music-icon" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        </div>
+    </header>
+
+    <div id="chat-window"></div>
+
+    <footer>
+        <div onclick="toggleDrawer()" style="cursor:pointer; font-size:26px; color:var(--light-text); padding:0 5px;">+</div>
+        <div id="footer-self-avatar" class="mini-avatar" onclick="triggerAvatarChange('self')"></div>
+        <input type="text" id="msg-input" placeholder="输入消息..." autocomplete="off">
+        <button id="send-btn" style="background:none; border:none; color:var(--highlight); font-weight:bold; cursor:pointer; font-size:15px;">发送</button>
+    </footer>
+
+    <div id="library-drawer">
+        <div class="drawer-tabs">
+            <button class="tab-btn active" onclick="switchTab('contacts')">👥 空间</button>
+            <button class="tab-btn" onclick="switchTab('words')">📝 字卡</button>
+            <button class="tab-btn" onclick="switchTab('emojis')">🎨 表情(全局)</button>
+            <button class="tab-btn" onclick="switchTab('settings')">⚙️ 设置</button>
+            <button class="tab-btn" onclick="toggleDrawer()" style="color:var(--text-color)">▼</button>
+        </div>
+
+        <div id="tab-contacts" class="tab-content active">
+            <div id="contact-list-container"></div>
+            <button class="btn-sub" style="margin-top:10px;" onclick="createNewContact()">+ 新建平行空间</button>
+        </div>
+
+        <div id="tab-words" class="tab-content">
+            <textarea id="batch-word-input" class="setting-input" rows="4" placeholder="批量添加当前联系人的专属字卡，每行一个..."></textarea>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-main" onclick="batchAddWords()">批量添加</button>
+                <button class="btn-danger" onclick="clearWords()">清空字卡</button>
+            </div>
+            <div id="word-list" style="margin-top:10px;"></div>
+        </div>
+
+        <div id="tab-emojis" class="tab-content">
+            <p style="font-size:12px; color:var(--light-text); margin-bottom:10px;">✨ 这里的表情库是所有联系人通用的哦</p>
+            <div style="display:flex; gap:5px; margin-bottom:10px;">
+                <input type="text" id="emoji-url-input" class="setting-input" style="margin:0;" placeholder="贴入图床表情链接 (.jpg/.png)">
+                <button class="btn-main" style="width:auto; padding:0 15px; margin:0;" onclick="addEmojiUrl()">添加</button>
+            </div>
+            <button onclick="document.getElementById('emoji-file').click()" class="btn-sub">或：本地相册批量压缩上传</button>
+            <button class="btn-danger" style="margin-top:10px;" onclick="clearEmojis()">清空全局表情库</button>
+            <div id="emoji-list" class="emoji-grid" style="margin-top:10px;"></div>
+        </div>
+
+        <div id="tab-settings" class="tab-content">
+            <p style="font-size:12px; color:var(--light-text); margin-bottom:5px;">专属全屏壁纸 (图床链接)：</p>
+            <input type="text" id="wallpaper-url-input" class="setting-input" onchange="updateWallpaperUrl(this.value)" placeholder="输入图床高清壁纸链接...">
+            <button onclick="document.getElementById('wallpaper-file').click()" class="btn-sub">或：本地相册上传壁纸</button>
+
+            <p style="font-size:12px; color:var(--highlight); margin-bottom:5px; margin-top:10px;">🎵 盲盒随机歌单 (当前空间专属)：</p>
+            <textarea id="bgm-list-input" class="setting-input" rows="3" onchange="updateBgmList()" placeholder="每行输入一个外部MP3链接。每次点击顶部音符播放时，小吉将为您随机抽取一首播放..."></textarea>
+            
+            <p style="font-size:12px; color:var(--light-text); margin-bottom:5px; margin-top:10px;">相识日期：</p>
+            <input type="date" id="date-input" class="setting-input" onchange="updateDate(this.value)">
+        </div>
+    </div>
+
+    <input type="file" id="wallpaper-file" accept="image/*">
+    <input type="file" id="emoji-file" accept="image/*" multiple>
+    <input type="file" id="avatar-file" accept="image/*">
+
+    <script>
+        let appState = {
+            selfAvatar: '',
+            activeId: 'chat_1',
+            globalEmojis: [], // 新增：全局通用表情库
+            chats: {
+                'chat_1': {
+                    name: 'Lovey', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [],
+                    words: ["亲爱的/宝宝", "晚安好梦", "下雨了", "今天有淡淡的栀子花香呢", "抱抱/贴贴/亲亲"]
+                }
+            }
+        };
+
+        let currentChat = null; 
+        let isTyping = false; 
+
+        function init() {
+            const saved = localStorage.getItem('lovey_v5_state');
+            if (saved) { 
+                appState = JSON.parse(saved); 
+                
+                // v6.0 数据无缝升级逻辑
+                if (!appState.globalEmojis) appState.globalEmojis = [];
+                
+                // 植入专属小彩蛋 (如果之前没有这些空间，就会悄悄加上)
+                const chatNames = Object.values(appState.chats).map(c => c.name);
+                if (!chatNames.includes('四哥')) {
+                    appState.chats['chat_sige'] = {
+                        name: '四哥', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [],
+                        words: ["四哥在呢", "过来", "今天乖不乖？"]
+                    };
+                }
+                if (!chatNames.includes('一与')) {
+                    appState.chats['chat_yiyu'] = {
+                        name: '一与', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [],
+                        words: ["贴贴~", "一起去玩吧！"]
+                    };
+                }
+                
+                // 升级旧版单首 BGM 为歌单列表
+                Object.values(appState.chats).forEach(c => {
+                    if (c.bgmUrl && !c.bgmList) c.bgmList = [c.bgmUrl];
+                    if (!c.bgmList) c.bgmList = [];
+                });
+            }
+            if (!appState.chats[appState.activeId]) appState.activeId = Object.keys(appState.chats)[0];
+            currentChat = appState.chats[appState.activeId];
+            applyUI(); renderChat();
+        }
+
+        function save() { try { localStorage.setItem('lovey_v5_state', JSON.stringify(appState)); } catch(e) { alert("内存满了！请使用图床链接代替本地上传。"); } }
+
+        function applyUI() {
+            currentChat = appState.chats[appState.activeId];
+            document.getElementById('display-name').innerText = currentChat.name;
+            document.title = currentChat.name;
+            document.getElementById('header-avatar').style.backgroundImage = `url(${currentChat.avatar})`;
+            document.getElementById('footer-self-avatar').style.backgroundImage = `url(${appState.selfAvatar})`;
+            document.body.style.backgroundImage = currentChat.wallpaper ? `url(${currentChat.wallpaper})` : 'none';
+            document.getElementById('wallpaper-url-input').value = currentChat.wallpaper || '';
+            document.getElementById('bgm-list-input').value = (currentChat.bgmList || []).join('\n');
+            document.getElementById('date-input').value = currentChat.startDate;
+            
+            const diff = Math.floor(Math.abs(new Date() - new Date(currentChat.startDate)) / (1000*60*60*24)) + 1;
+            document.getElementById('memorial-days').innerText = `第 ${diff} 天`;
+            
+            renderContactList(); renderWordList(); renderEmojiList();
+            
+            // 切换空间时自动暂停音乐
+            const player = document.getElementById('bgm-player');
+            player.pause();
+            document.getElementById('music-svg').classList.remove('music-playing');
+            document.getElementById('status-text').innerText = "在线";
+            isTyping = false;
+        }
+
+        // --- 联系人平行空间 ---
+        function renderContactList() {
+            const container = document.getElementById('contact-list-container');
+            let html = '';
+            for (let id in appState.chats) {
+                const c = appState.chats[id];
+                const isActive = id === appState.activeId ? 'active' : '';
+                html += `<div class="contact-item ${isActive}" onclick="switchContact('${id}')">
+                    <div class="mini-avatar" style="background-image:url(${c.avatar}); margin-right:10px;"></div>
+                    <div style="flex:1;"><div style="font-size:14px; font-weight:bold;">${c.name}</div>
+                    <div style="font-size:10px; color:var(--light-text);">${c.messages.length} 条记忆</div></div></div>`;
+            }
+            container.innerHTML = html;
+        }
+        function switchContact(id) { appState.activeId = id; save(); applyUI(); renderChat(); toggleDrawer(); }
+        function createNewContact() {
+            const newName = prompt("给新的空间起个名字：");
+            if (newName) {
+                const newId = 'chat_' + Date.now();
+                appState.chats[newId] = { name: newName, avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [], words: ["你好呀！"] };
+                appState.activeId = newId; save(); applyUI(); renderChat();
+            }
+        }
+
+        // --- 盲盒随机歌单逻辑 ---
+        function updateBgmList() {
+            const lines = document.getElementById('bgm-list-input').value.split('\n');
+            currentChat.bgmList = lines.map(l => l.trim()).filter(l => l);
+            save();
+        }
+
+        function toggleMusic() { 
+            const p = document.getElementById('bgm-player'); const s = document.getElementById('music-svg');
+            if (p.paused) { 
+                if (currentChat.bgmList && currentChat.bgmList.length > 0) { 
+                    // 随机抽取一首歌
+                    const randomSong = currentChat.bgmList[Math.floor(Math.random() * currentChat.bgmList.length)];
+                    p.src = randomSong;
+                    p.play().then(() => s.classList.add('music-playing')).catch(() => { alert("网页限制，请先点击屏幕任意处") }); 
+                } else { 
+                    alert("请在设置中填入至少一个 MP3 链接作为歌单哦~"); toggleDrawer(); 
+                }
+            } else { 
+                p.pause(); s.classList.remove('music-playing'); 
+            }
+        }
+
+        // --- 全局通用表情与专属字卡 ---
+        function batchAddWords() {
+            const lines = document.getElementById('batch-word-input').value.split('\n');
+            let count = 0;
+            lines.forEach(line => { if (line.trim()) { currentChat.words.push(line.trim()); count++; } });
+            if (count > 0) { document.getElementById('batch-word-input').value = ''; save(); renderWordList(); alert(`添加了 ${count} 个词条！`); }
+        }
+        function renderWordList() { document.getElementById('word-list').innerHTML = currentChat.words.map((w, i) => `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; font-size:13px"><span>${w}</span><span style="color:#cc8888; cursor:pointer" onclick="currentChat.words.splice(${i},1);save();renderWordList()">删除</span></div>`).join(''); }
+        function clearWords() { if (confirm(`清空 ${currentChat.name} 的专属字卡吗？`)) { currentChat.words = []; save(); renderWordList(); } }
+
+        function addEmojiUrl() {
+            const url = document.getElementById('emoji-url-input').value.trim();
+            if(url) { appState.globalEmojis.push(url); document.getElementById('emoji-url-input').value = ''; save(); renderEmojiList(); }
+        }
+
+        document.getElementById('emoji-file').onchange = async function(e) {
+            const files = e.target.files; if (files.length === 0) return;
+            document.getElementById('emoji-list').innerHTML = "<p style='font-size:12px;color:var(--highlight);'>处理中...</p>";
+            for (let i = 0; i < files.length; i++) {
+                try { const base64 = await compressImage(files[i]); appState.globalEmojis.push(base64); } catch (err) {}
+            }
+            save(); renderEmojiList();
+        };
+
+        function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader(); reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image(); img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+                        const scale = img.width > 250 ? 250 / img.width : 1;
+                        canvas.width = img.width * scale; canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height); resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    }; img.onerror = reject;
+                };
+            });
+        }
+
+        function renderEmojiList() {
+            document.getElementById('emoji-list').innerHTML = appState.globalEmojis.map((img, i) => `<div class="emoji-box" style="background-image:url(${img})" onclick="sendMsg('${img}',true)"><div class="del-badge" onclick="event.stopPropagation(); appState.globalEmojis.splice(${i},1);save();renderEmojiList()">×</div></div>`).join('');
+        }
+        function clearEmojis() { if (confirm(`确定要清空全局表情库吗？`)) { appState.globalEmojis = []; save(); renderEmojiList(); } }
+
+        // --- 聊天与 10秒沉浸打字逻辑 ---
+        function sendMsg(text, isImg=false, type='self') {
+            const msg = { text, isImg, type, id: Date.now() };
+            currentChat.messages.push(msg); renderSingleMsg(msg); save();
+            if(type === 'self') autoReply();
+        }
+
+        function renderSingleMsg(m) {
+            const win = document.getElementById('chat-window'); const row = document.createElement('div');
+            row.className = `msg-row ${m.type==='self'?'row-self self':'other'}`;
+            const avatarImg = m.type === 'self' ? appState.selfAvatar : currentChat.avatar;
+            const av = `<div class="mini-avatar" style="background-image:url(${avatarImg})"></div>`;
+            const content = m.isImg ? `<img src="${m.text}" class="img-content" onload="scrollToBottom()">` : `<span>${m.text}</span>`;
+            row.innerHTML = m.type==='self' ? `<div class="bubble">${content}</div>${av}` : `${av}<div class="bubble">${content}</div>`;
+            win.appendChild(row); scrollToBottom();
+        }
+
+        function autoReply() {
+            if (isTyping) return; 
+            // 从专属字卡 和 全局表情库中 混合抽卡
+            const pool = [...currentChat.words.map(w=>({t:w,i:false})), ...appState.globalEmojis.map(e=>({t:e,i:true}))];
+            if(!pool.length) return;
+            
+            isTyping = true;
+            document.getElementById('status-text').innerText = "正在输入中...";
+            
+            setTimeout(() => {
+                const item = pool[Math.floor(Math.random()*pool.length)];
+                const msg = { text: item.t, isImg: item.i, type: 'other', id: Date.now() };
+                currentChat.messages.push(msg); renderSingleMsg(msg); save();
+                document.getElementById('status-text').innerText = "在线";
+                isTyping = false;
+            }, 10000); 
+        }
+
+        function renderChat() { document.getElementById('chat-window').innerHTML = ''; currentChat.messages.forEach(renderSingleMsg); }
+        function scrollToBottom() { const c = document.getElementById('chat-window'); c.scrollTop = c.scrollHeight; }
+
+        // --- 设置与其他 ---
+        function editPartnerName() { const n = prompt("名字：", currentChat.name); if(n && n.trim()) { currentChat.name = n.trim(); applyUI(); save(); } }
+        function updateDate(d) { currentChat.startDate = d; save(); applyUI(); }
+        function updateWallpaperUrl(url) { currentChat.wallpaper = url; applyUI(); save(); }
+
+        function triggerAvatarChange(t) { window.avT = t; document.getElementById('avatar-file').click(); }
+        document.getElementById('avatar-file').onchange = async function(e) {
+            if(e.target.files.length > 0) {
+                const base64 = await compressImage(e.target.files[0]);
+                if(window.avT === 'self') appState.selfAvatar = base64; else currentChat.avatar = base64;
+                save(); applyUI(); renderChat();
+            }
+        };
+
+        document.getElementById('wallpaper-file').onchange = async function(e) {
+            if(e.target.files.length > 0) {
+                const reader = new FileReader(); reader.readAsDataURL(e.target.files[0]);
+                reader.onload = (ev) => { currentChat.wallpaper = ev.target.result; applyUI(); save(); };
+            }
+        };
+
+        function switchTab(t) { document.querySelectorAll('.tab-btn, .tab-content').forEach(el=>el.classList.remove('active')); event.target.classList.add('active'); document.getElementById(`tab-${t}`).classList.add('active'); }
+        function toggleDrawer() { document.getElementById('library-drawer').classList.toggle('open'); }
+
+        document.getElementById('send-btn').onclick = () => { const i = document.getElementById('msg-input'); if(i.value.trim()) { sendMsg(i.value.trim()); i.value=''; } };
+        document.getElementById('msg-input').onkeypress = (e) => { if(e.key==='Enter') document.getElementById('send-btn').click(); };
+
+        init();
+    </script>
+</body>
+</html>
