@@ -157,7 +157,6 @@
         </div>
 
         <div id="tab-emojis" class="tab-content">
-        <div id="tab-emojis" class="tab-content">
             <p style="font-size:12px; color:var(--light-text); margin-bottom:10px;">✨ 全局共享表情库</p>
             <textarea id="batch-emoji-input" class="setting-input" rows="3" placeholder="批量贴入图床表情链接，每行一个 (.jpg/.png)"></textarea>
             <div style="display:flex; gap:10px; margin-bottom:10px;">
@@ -451,7 +450,7 @@
                 save(); renderEmojiList();
                 alert(`成功批量添加了 ${count} 个表情包！`);
             }
-        } { const url = document.getElementById('emoji-url-input').value.trim(); if(url) { appState.globalEmojis.push(url); document.getElementById('emoji-url-input').value = ''; save(); renderEmojiList(); } }
+        }
 
         document.getElementById('emoji-file').onchange = async function(e) {
             const files = e.target.files; if (files.length === 0) return;
