@@ -7,9 +7,17 @@
     <link rel="stylesheet" href="https://cdn.staticfile.net/lxgw-wenkai-webfont/1.6.0/style.css">
     <style>
         :root {
-            --primary-color: #f1f5f6; --secondary-color: #d2e6ec; --accent-color: #d1d1d1;
-            --text-color: #5a5a5a; --light-text: #8a8a8a; --highlight: #e1b2b2;
-            --message-self: rgba(241, 214, 214, 0.85); --message-other: rgba(219, 229, 241, 0.85);
+            /* Solotype 日间风格配色 */
+            --primary-color: #f5f6f8; 
+            --secondary-color: #e4e5e8; 
+            --accent-color: #d1d1d1;
+            --text-color: #333333; 
+            --light-text: #999999; 
+            --highlight: #0086FD; /* Solotype 蓝 */
+            --message-self: linear-gradient(90deg, #0069F6, #0086FD); /* 用户气泡渐变蓝 */
+            --message-other: #F2F1F5; /* AI气泡浅灰 */
+            --text-self: #ffffff;
+            --text-other: #333333;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
@@ -39,13 +47,43 @@
         .msg-row { display: flex; align-items: flex-start; gap: 10px; max-width: 88%; }
         .row-self { flex-direction: row-reverse; align-self: flex-end; }
         .mini-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: var(--accent-color) center/cover; }
-        .bubble { padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.6; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); box-shadow: 0 2px 5px rgba(0,0,0,0.02); word-wrap: break-word; }
-        .self .bubble { background: var(--message-self); border-top-right-radius: 2px; }
-        .other .bubble { background: var(--message-other); border-top-left-radius: 2px; }
-        .img-content { max-width: 140px; border-radius: 10px; display: block; }
+        .bubble { 
+            padding: 10px 14px; 
+            border-radius: 20px; /* 文档同款圆角 */
+            font-size: 15px; 
+            line-height: 1.6; 
+            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+            word-wrap: break-word; 
+        }
+        .self .bubble { 
+            background: var(--message-self); 
+            color: var(--text-self); /* 蓝色气泡配白字 */
+            border-top-right-radius: 4px; /* 模拟文档里的折角效果 */
+        }
+        .other .bubble { 
+            background: var(--message-other); 
+            color: var(--text-other); /* 灰色气泡配黑字 */
+            border-top-left-radius: 4px; 
+        }
+        .img-content { max-width: 140px; border-radius: 12px; display: block; }
 
-        footer { height: 70px; background: rgba(241, 245, 246, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--secondary-color); position: fixed; bottom: 0; width: 100%; display: flex; padding: 0 15px; align-items: center; gap: 12px; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
-        #msg-input { flex: 1; height: 40px; border: none; border-radius: 20px; padding: 0 15px; background: rgba(255, 255, 255, 0.5); outline: none; font-size: 16px; font-family: "LXGW WenKai", sans-serif; }
+        footer { 
+            height: 70px; background: rgba(245, 246, 248, 0.85); 
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
+            position: fixed; bottom: 0; width: 100%; display: flex; 
+            padding: 0 15px; align-items: center; gap: 12px; z-index: 100; 
+            padding-bottom: env(safe-area-inset-bottom); border-top: 1px solid rgba(0,0,0,0.03);
+        }
+        #msg-input { 
+            flex: 1; height: 42px; 
+            background-color: #FFFFFF; /* 文档同款白底输入框 */
+            border: 1px solid #E7E7E8; /* 文档同款浅色边框 */
+            border-radius: 27px; /* 文档同款圆角 */
+            padding: 0 15px; outline: none; font-size: 15px; 
+            font-family: "LXGW WenKai", sans-serif; 
+            color: #000;
+        }
 
         #library-drawer { position: fixed; bottom: -90%; left: 0; width: 100%; height: 85%; background: #f1f5f6; z-index: 500; border-top: 1px solid var(--secondary-color); transition: 0.3s; display: flex; flex-direction: column; padding: 20px; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
         #library-drawer.open { bottom: 0; }
@@ -57,7 +95,7 @@
         
         .setting-input { width: 100%; padding: 10px; border: 1px solid var(--secondary-color); border-radius: 8px; margin-bottom: 10px; font-size: 14px; background: white; outline: none; font-family: "LXGW WenKai", sans-serif; }
         .btn-main { width: 100%; padding: 12px; background: var(--highlight); color: white; border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; font-family: "LXGW WenKai", sans-serif; }
-        .btn-sub { width: 100%; padding: 12px; background: var(--secondary-color); color: var(--text-color); border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; font-family: "LXGW WenKai", sans-serif; }
+        .btn-sub { width: 100%; padding: 12px; background: var(--secondary-color); color: var(--text-color); border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; font-family: "LXGW WenKai", sans-serif; font-weight: bold; }
         .btn-danger { width: 100%; padding: 12px; background: #e1b2b2; color: white; border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; opacity: 0.8; font-family: "LXGW WenKai", sans-serif; }
         
         .emoji-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
@@ -67,7 +105,7 @@
         .contact-item { display: flex; align-items: center; padding: 12px; background: white; border-radius: 10px; margin-bottom: 10px; cursor: pointer; border: 1px solid var(--secondary-color); }
         .contact-item.active { border-color: var(--highlight); background: rgba(225, 178, 178, 0.05); }
 
-        #wallpaper-file, #emoji-file, #avatar-file { display: none; }
+        #wallpaper-file, #emoji-file, #avatar-file, #import-file { display: none; }
     </style>
 </head>
 <body>
@@ -92,7 +130,7 @@
         <div onclick="toggleDrawer()" style="cursor:pointer; font-size:26px; color:var(--light-text); padding:0 5px;">+</div>
         <div id="footer-self-avatar" class="mini-avatar" onclick="triggerAvatarChange('self')"></div>
         <input type="text" id="msg-input" placeholder="输入消息..." autocomplete="off">
-        <button id="send-btn" style="background:none; border:none; color:var(--highlight); font-weight:bold; cursor:pointer; font-size:15px; font-family: 'LXGW WenKai', sans-serif;">发送</button>
+        <button id="send-btn" style="background:none; border:none; color:var(--light-text); font-weight:bold; cursor:pointer; font-size:15px; font-family: 'LXGW WenKai', sans-serif;">让他回</button>
     </footer>
 
     <div id="library-drawer">
@@ -119,10 +157,11 @@
         </div>
 
         <div id="tab-emojis" class="tab-content">
+        <div id="tab-emojis" class="tab-content">
             <p style="font-size:12px; color:var(--light-text); margin-bottom:10px;">✨ 全局共享表情库</p>
-            <div style="display:flex; gap:5px; margin-bottom:10px;">
-                <input type="text" id="emoji-url-input" class="setting-input" style="margin:0;" placeholder="贴入图床表情链接 (.jpg/.png)">
-                <button class="btn-main" style="width:auto; padding:0 15px; margin:0;" onclick="addEmojiUrl()">添加</button>
+            <textarea id="batch-emoji-input" class="setting-input" rows="3" placeholder="批量贴入图床表情链接，每行一个 (.jpg/.png)"></textarea>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <button class="btn-main" onclick="batchAddEmojis()">批量添加</button>
             </div>
             <button onclick="document.getElementById('emoji-file').click()" class="btn-sub">或：本地相册批量压缩上传</button>
             <button class="btn-danger" style="margin-top:10px;" onclick="clearEmojis()">清空全局表情库</button>
@@ -130,10 +169,18 @@
         </div>
 
         <div id="tab-settings" class="tab-content">
+            <p style="font-size:12px; color:var(--highlight); margin-bottom:5px;">💾 记忆保险箱 (防清理终极武器)：</p>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button class="btn-main" onclick="exportData()" style="flex:1; margin:0; background:#a2c9d4; color:#fff;">↓ 备份导出记忆</button>
+                <button class="btn-main" onclick="document.getElementById('import-file').click()" style="flex:1; margin:0; background:#d4a2a2; color:#fff;">↑ 恢复倒入记忆</button>
+            </div>
+            <p style="font-size:10px; color:var(--light-text); margin-bottom:15px; line-height:1.4;">提示：强烈建议每隔几天点击【备份】，把文件保存在手机里。万一被系统清空，点击【恢复】选择文件即可满血复活！</p>
+            <hr style="border:0; border-top:1px dashed var(--secondary-color); margin-bottom:15px;">
+
             <p style="font-size:12px; color:var(--highlight); margin-bottom:5px;">🎁 惊喜掉落 & 离线留言：</p>
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px; background:white; padding:10px; border-radius:8px; border:1px solid var(--secondary-color);">
                 <label style="font-size:14px; flex:1; display:flex; align-items:center; gap:5px;">
-                    <input type="checkbox" id="random-drop-cb" onchange="updateRandomDrop(this.checked)"> 允许对方随时打扰
+                    <input type="checkbox" id="random-drop-cb" onchange="updateRandomDrop(this.checked)"> 允许不定时打扰
                 </label>
                 <div style="font-size:12px; color:var(--light-text); display:flex; align-items:center; gap:5px;">
                     平均每 <input type="number" id="drop-freq-input" class="setting-input" style="width:50px; margin:0; padding:5px; text-align:center;" onchange="updateDropFreq(this.value)" min="1"> 分钟
@@ -165,13 +212,14 @@
     <input type="file" id="wallpaper-file" accept="image/*">
     <input type="file" id="emoji-file" accept="image/*" multiple>
     <input type="file" id="avatar-file" accept="image/*">
+    <input type="file" id="import-file" accept=".json,.txt" onchange="importData(event)">
 
     <script>
         let appState = {
             selfAvatar: '',
             activeId: 'chat_1',
             globalEmojis: [],
-            lastLeaveTime: Date.now(), // 隐形秒表
+            lastLeaveTime: Date.now(), 
             chats: {
                 'chat_1': {
                     name: 'Lovey', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [],
@@ -189,53 +237,86 @@
         function init() {
             const saved = localStorage.getItem('lovey_v5_state');
             if (saved) { 
-                appState = JSON.parse(saved); 
-                if (!appState.globalEmojis) appState.globalEmojis = [];
-                if (!appState.lastLeaveTime) appState.lastLeaveTime = Date.now();
-                
-                const chatNames = Object.values(appState.chats).map(c => c.name);
-                if (!chatNames.includes('四哥')) { appState.chats['chat_sige'] = { name: '四哥', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [], words: ["四哥在呢", "过来", "今天乖不乖？"], replySpeed: 10 }; }
-                if (!chatNames.includes('一与')) { appState.chats['chat_yiyu'] = { name: '一与', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [], words: ["贴贴~", "一起去玩吧！"], replySpeed: 5 }; }
-                
-                Object.values(appState.chats).forEach(c => {
-                    if (c.bgmUrl && !c.bgmList) c.bgmList = [c.bgmUrl];
-                    if (!c.bgmList) c.bgmList = [];
-                    if (c.replySpeed === undefined) c.replySpeed = 10; 
-                    if (c.randomDrop === undefined) c.randomDrop = false;
-                    if (c.dropFreq === undefined) c.dropFreq = 5;
-                    if (c.notifyUrl === undefined) c.notifyUrl = 'https://cdn.pixabay.com/audio/2021/08/04/audio_bb630cc098.mp3';
-                });
+                try {
+                    appState = JSON.parse(saved); 
+                    if (!appState.globalEmojis) appState.globalEmojis = [];
+                    if (!appState.lastLeaveTime) appState.lastLeaveTime = Date.now();
+                    
+                    const chatNames = Object.values(appState.chats).map(c => c.name);
+                    if (!chatNames.includes('顾时夜') && !chatNames.includes('四哥')) { appState.chats['chat_sige'] = { name: '顾时夜', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [], words: ["我在。", "过来。", "今天乖不乖？"], replySpeed: 10 }; }
+                    if (!chatNames.includes('一与')) { appState.chats['chat_yiyu'] = { name: '一与', avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [], words: ["贴贴~", "一起去玩吧！"], replySpeed: 5 }; }
+                    
+                    Object.values(appState.chats).forEach(c => {
+                        if (c.bgmUrl && !c.bgmList) c.bgmList = [c.bgmUrl];
+                        if (!c.bgmList) c.bgmList = [];
+                        if (c.replySpeed === undefined) c.replySpeed = 10; 
+                        if (c.randomDrop === undefined) c.randomDrop = false;
+                        if (c.dropFreq === undefined) c.dropFreq = 5;
+                        if (c.notifyUrl === undefined) c.notifyUrl = 'https://cdn.pixabay.com/audio/2021/08/04/audio_bb630cc098.mp3';
+                    });
+                } catch(e) { console.error("读取缓存出错", e); }
             }
             if (!appState.chats[appState.activeId]) appState.activeId = Object.keys(appState.chats)[0];
             currentChat = appState.chats[appState.activeId];
             
-            // 核心：处理离线期间错过的未读消息
             processOfflineMessages();
-            
             applyUI(); 
             renderChat();
             
-            setTimeout(() => { 
-                isAppReady = true; 
-                startDropTimer(); 
-            }, 1000);
+            setTimeout(() => { isAppReady = true; startDropTimer(); }, 1000);
         }
 
         function save() { 
-            appState.lastLeaveTime = Date.now(); // 每次存盘更新秒表
-            try { localStorage.setItem('lovey_v5_state', JSON.stringify(appState)); } catch(e) { alert("内存满了！请使用图床链接。"); } 
+            appState.lastLeaveTime = Date.now(); 
+            try { localStorage.setItem('lovey_v5_state', JSON.stringify(appState)); } catch(e) { alert("内存满了！请使用图床链接代替本地上传。"); } 
         }
 
-        // --- 核心：时光倒流/离线留言引擎 ---
+        function exportData() {
+            try {
+                const dataStr = JSON.stringify(appState);
+                const blob = new Blob([dataStr], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const dateStr = new Date().toISOString().split('T')[0];
+                a.download = `Lovey_Memory_Backup_${dateStr}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                alert("💾 记忆已经成功打包下载啦！\n（请去手机的【文件管理】或【下载】目录找找看，千万别删掉哦！）");
+            } catch(e) {
+                alert("导出失败，可能是因为上传的本地图片太多导致文件过大！建议清空一些表情包后再试~");
+            }
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const parsed = JSON.parse(evt.target.result);
+                    if (parsed && parsed.chats) {
+                        appState = parsed;
+                        if (!appState.activeId || !appState.chats[appState.activeId]) { appState.activeId = Object.keys(appState.chats)[0]; }
+                        currentChat = appState.chats[appState.activeId];
+                        save(); applyUI(); renderChat();
+                        alert("✨ 时光倒流成功！四哥和一与的记忆全都回来啦！");
+                    } else { alert("❌ 哎呀，这个记忆文件好像损坏了，或者不是正确的格式..."); }
+                } catch(err) { alert("❌ 读取记忆失败，请确保选择的是以 .json 结尾的备份文件哦！"); }
+                document.getElementById('import-file').value = ''; 
+            };
+            reader.readAsText(file);
+        }
+
         function processOfflineMessages() {
             if (!currentChat.randomDrop || !appState.lastLeaveTime) return;
             const now = Date.now();
             const awayMs = now - appState.lastLeaveTime;
             const freqMs = (currentChat.dropFreq || 5) * 60 * 1000;
 
-            // 只有离开超过 2 分钟才有可能触发离线补偿
             if (awayMs > 120000) {
-                // 计算离线期间大概错过了几次掉落（最多补偿3条，防刷屏）
                 let missedDrops = Math.floor(awayMs / freqMs);
                 if (missedDrops === 0 && Math.random() < 0.4) missedDrops = 1; 
                 missedDrops = Math.min(3, missedDrops);
@@ -248,9 +329,7 @@
                             const fakeTime = appState.lastLeaveTime + Math.floor(Math.random() * awayMs);
                             currentChat.messages.push({ text: item.t, isImg: item.i, type: 'other', id: fakeTime });
                         }
-                        // 按时间轴重新排序
                         currentChat.messages.sort((a,b) => a.id - b.id);
-                        // 切回来时响一声提示音制造惊喜
                         setTimeout(() => playNotifySound(), 1500);
                     }
                 }
@@ -258,22 +337,13 @@
             appState.lastLeaveTime = now;
         }
 
-        // --- 核心：精准捕捉你切出后台的瞬间 ---
         document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === 'hidden') {
-                // 网页被锁屏/切走，记下时间
-                appState.lastLeaveTime = Date.now();
-                save();
-            } else {
-                // 网页被重新打开！触发时光倒流引擎
-                processOfflineMessages();
-                renderChat();
-                appState.lastLeaveTime = Date.now();
-                save();
-            }
+            if (document.visibilityState === 'hidden') { appState.lastLeaveTime = Date.now(); save();
+            } else { processOfflineMessages(); renderChat(); appState.lastLeaveTime = Date.now(); save(); }
         });
 
         function applyUI() {
+            currentChat = appState.chats[appState.activeId];
             document.getElementById('display-name').innerText = currentChat.name;
             document.title = currentChat.name;
             document.getElementById('header-avatar').style.backgroundImage = `url(${currentChat.avatar})`;
@@ -311,8 +381,7 @@
         function playNotifySound() {
             if (!isAppReady || !currentChat.notifyUrl) return;
             const p = document.getElementById('notify-player');
-            p.currentTime = 0;
-            p.play().catch(()=>{});
+            p.currentTime = 0; p.play().catch(()=>{});
         }
 
         function startDropTimer() {
@@ -338,18 +407,15 @@
         }
         function switchContact(id) { 
             appState.activeId = id; 
-            currentChat = appState.chats[id]; // 核心修复：把大脑切换到当前联系人！
-            save(); 
-            applyUI(); 
-            renderChat(); 
-            toggleDrawer(); 
+            currentChat = appState.chats[id];
+            save(); applyUI(); renderChat(); toggleDrawer(); 
         }
         function createNewContact() {
             const newName = prompt("给新的空间起个名字：");
             if (newName) {
                 const newId = 'chat_' + Date.now();
                 appState.chats[newId] = { name: newName, avatar: '', wallpaper: '', bgmList: [], startDate: new Date().toISOString().split('T')[0], messages: [], words: ["你好呀！"], replySpeed: 10, randomDrop: false, dropFreq: 5, notifyUrl: 'https://cdn.pixabay.com/audio/2021/08/04/audio_bb630cc098.mp3' };
-                appState.activeId = newId; save(); applyUI(); renderChat();
+                appState.activeId = newId; currentChat = appState.chats[newId]; save(); applyUI(); renderChat();
             }
         }
 
@@ -360,9 +426,7 @@
             if (p.paused) { 
                 if (currentChat.bgmList && currentChat.bgmList.length > 0) { 
                     p.src = currentChat.bgmList[Math.floor(Math.random() * currentChat.bgmList.length)];
-                    p.play().then(() => s.classList.add('music-playing')).catch((e) => { 
-                        alert("🎵 播放失败惹！请检查：\n1. 链接必须是 https:// 开头\n2. 链接前后不能有空格"); 
-                    }); 
+                    p.play().then(() => s.classList.add('music-playing')).catch((e) => { alert("🎵 播放失败惹！请检查：\n1. 链接必须是 https:// 开头\n2. 链接前后不能有空格"); }); 
                 } else { alert("请在设置中填入至少一个 MP3 链接作为歌单哦~"); toggleDrawer(); }
             } else { p.pause(); s.classList.remove('music-playing'); }
         }
@@ -375,7 +439,19 @@
         function renderWordList() { document.getElementById('word-list').innerHTML = currentChat.words.map((w, i) => `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; font-size:13px"><span>${w}</span><span style="color:#cc8888; cursor:pointer" onclick="currentChat.words.splice(${i},1);save();renderWordList()">删除</span></div>`).join(''); }
         function clearWords() { if (confirm(`清空 ${currentChat.name} 的专属字卡吗？`)) { currentChat.words = []; save(); renderWordList(); } }
 
-        function addEmojiUrl() { const url = document.getElementById('emoji-url-input').value.trim(); if(url) { appState.globalEmojis.push(url); document.getElementById('emoji-url-input').value = ''; save(); renderEmojiList(); } }
+        function batchAddEmojis() {
+            const lines = document.getElementById('batch-emoji-input').value.split('\n');
+            let count = 0;
+            lines.forEach(line => {
+                const url = line.trim();
+                if (url) { appState.globalEmojis.push(url); count++; }
+            });
+            if (count > 0) {
+                document.getElementById('batch-emoji-input').value = '';
+                save(); renderEmojiList();
+                alert(`成功批量添加了 ${count} 个表情包！`);
+            }
+        } { const url = document.getElementById('emoji-url-input').value.trim(); if(url) { appState.globalEmojis.push(url); document.getElementById('emoji-url-input').value = ''; save(); renderEmojiList(); } }
 
         document.getElementById('emoji-file').onchange = async function(e) {
             const files = e.target.files; if (files.length === 0) return;
@@ -405,7 +481,7 @@
         function sendMsg(text, isImg=false, type='self') {
             const msg = { text, isImg, type, id: Date.now() };
             currentChat.messages.push(msg); renderSingleMsg(msg); save();
-            if(type === 'self') autoReply(false); 
+            // 核心修改：这里删掉了原来的 autoReply，让你彻底掌握话语权！
         }
 
         function renderSingleMsg(m) {
@@ -479,8 +555,34 @@
         function switchTab(t) { document.querySelectorAll('.tab-btn, .tab-content').forEach(el=>el.classList.remove('active')); event.target.classList.add('active'); document.getElementById(`tab-${t}`).classList.add('active'); }
         function toggleDrawer() { document.getElementById('library-drawer').classList.toggle('open'); }
 
-        document.getElementById('send-btn').onclick = () => { const i = document.getElementById('msg-input'); if(i.value.trim()) { sendMsg(i.value.trim()); i.value=''; } };
-        document.getElementById('msg-input').onkeypress = (e) => { if(e.key==='Enter') document.getElementById('send-btn').click(); };
+        // ========== 核心新增：倾听模式（动态发送按钮） ==========
+        const msgInput = document.getElementById('msg-input');
+        const sendBtn = document.getElementById('send-btn');
+        
+        msgInput.addEventListener('input', () => {
+            if (msgInput.value.trim()) {
+                sendBtn.innerText = '发送';
+                sendBtn.style.color = 'var(--highlight)';
+            } else {
+                sendBtn.innerText = '让他回';
+                sendBtn.style.color = 'var(--light-text)';
+            }
+        });
+
+        sendBtn.onclick = () => { 
+            if (msgInput.value.trim()) { 
+                sendMsg(msgInput.value.trim()); 
+                msgInput.value = ''; 
+                // 发完之后恢复成待机状态
+                sendBtn.innerText = '让他回'; 
+                sendBtn.style.color = 'var(--light-text)';
+            } else {
+                // 如果是空输入框点击，就触发回复！
+                if (!isTyping) autoReply(false);
+            }
+        };
+        msgInput.onkeypress = (e) => { if(e.key==='Enter') sendBtn.click(); };
+        // ===================================================
 
         init();
     </script>
