@@ -27,12 +27,15 @@
             height: 100vh; height: 100dvh; 
             display: flex; flex-direction: column; overflow: hidden; transition: background 0.4s;
         }
-        
+
         header {
-            height: 95px; background: rgba(241, 245, 246, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--secondary-color); position: fixed; top: 0; width: 100%; z-index: 100;
+            height: 55px; /* 顶栏变窄 */
+            background: rgba(245, 246, 248, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(0,0,0,0.03); position: fixed; top: 0; width: 100%; z-index: 100;
             display: flex; justify-content: center; align-items: center;
         }
+        .self .msg-time { color: rgba(255, 255, 255, 0.85); } /* 蓝色气泡配白色时间 */
+        .other .msg-time { color: #aaaaaa; } /* 灰色气泡配灰色时间 */
         .info-center { text-align: center; cursor: pointer; min-width: 150px; padding: 5px; }
         .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-color) center/cover; margin: 0 auto 4px; border: 1px solid rgba(255,255,255,0.5); }
         .name { font-size: 14px; letter-spacing: 1px; font-weight: bold; }
@@ -43,7 +46,27 @@
         .music-playing { animation: rotate 3s linear infinite; fill: var(--highlight); }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        #chat-window { flex: 1; margin-top: 95px; padding: 20px 20px 120px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+                #chat-window { 
+            flex: 1; margin-top: 55px; /* 配合顶栏变窄上移 */
+            padding: 20px 20px 120px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; 
+        }
+
+        /* 隐藏聊天界面你的头像 */
+        .row-self .mini-avatar { 
+            display: none !important; 
+        }
+
+        /* 聊天气泡里的时间戳样式 */
+        .msg-time {
+            font-size: 11px;
+            margin-left: 6px;
+            opacity: 0.7;
+            vertical-align: -1px;
+            display: inline-block;
+            font-family: -apple-system, sans-serif;
+        }
+        .self .msg-time { color: rgba(255, 255, 255, 0.85); } /* 蓝色气泡配白色时间 */
+        .other .msg-time { color: #aaaaaa; } /* 灰色气泡配灰色时间 */
         .msg-row { display: flex; align-items: flex-start; gap: 10px; max-width: 88%; }
         .row-self { flex-direction: row-reverse; align-self: flex-end; }
         .mini-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: var(--accent-color) center/cover; }
@@ -113,12 +136,14 @@
     <audio id="notify-player"></audio>
     
     <header>
-        <div class="info-center" onclick="editPartnerName()">
-            <div id="header-avatar" class="avatar" onclick="event.stopPropagation(); triggerAvatarChange('other')"></div>
-            <div id="display-name" class="name">Lovey</div>
-            <div id="memorial-days" class="days-tag">第 1 天</div>
-            <div id="status-text" class="status">在线</div>
+        <div class="info-center" onclick="editPartnerName()" style="display: flex; align-items: baseline; justify-content: center; gap: 8px; width: 100%;">
+            <div id="display-name" class="name" style="font-size: 16px; font-weight: bold; color: var(--text-color);">Lovey</div>
+            <div id="memorial-days" class="days-tag" style="margin: 0; font-size: 11px; background: none; color: var(--light-text); padding: 0;">第 1 天</div>
         </div>
+        
+        <div id="header-avatar" style="display:none;" onclick="triggerAvatarChange('other')"></div>
+        <div id="status-text" style="display:none;"></div>
+        
         <div class="music-toggle" onclick="toggleMusic()" title="点击播放随机盲盒音乐">
             <svg id="music-svg" class="music-icon" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
         </div>
@@ -488,7 +513,15 @@
             row.className = `msg-row ${m.type==='self'?'row-self self':'other'}`;
             const avatarImg = m.type === 'self' ? appState.selfAvatar : currentChat.avatar;
             const av = `<div class="mini-avatar" style="background-image:url(${avatarImg})"></div>`;
-            const content = m.isImg ? `<img src="${m.text}" class="img-content" onload="scrollToBottom()">` : `<span>${m.text}</span>`;
+            
+            // 核心修改：提取消息发送时间，并转换成 02:29 的格式
+            const date = new Date(m.id);
+            const timeStr = date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+            const timeSpan = `<span class="msg-time">${timeStr}</span>`;
+
+            // 把时间戳塞进气泡的内容后面
+            const content = m.isImg ? `<img src="${m.text}" class="img-content" onload="scrollToBottom()">${timeSpan}` : `<span>${m.text}</span>${timeSpan}`;
+            
             row.innerHTML = m.type==='self' ? `<div class="bubble">${content}</div>${av}` : `${av}<div class="bubble">${content}</div>`;
             win.appendChild(row); scrollToBottom();
             
