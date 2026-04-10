@@ -93,7 +93,6 @@
         
         .setting-input { width: 100%; padding: 10px; border: 1px solid var(--secondary-color); border-radius: 8px; margin-bottom: 10px; font-size: 13px; background: rgba(255,255,255,0.8); outline: none; font-family: "LXGW WenKai", sans-serif; color: var(--text-color); }
         .btn-main { width: 100%; padding: 12px; background: var(--highlight); color: white; border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; font-family: "LXGW WenKai", sans-serif; box-shadow: 0 2px 6px rgba(255,141,161,0.4); }
-        .btn-sub { width: 100%; padding: 12px; background: rgba(255,182,193,0.2); color: var(--text-color); border: 1px solid var(--secondary-color); border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; font-family: "LXGW WenKai", sans-serif; font-weight: bold; }
         
         /* 拼贴字卡特效 */
         #letter-reply-box { margin-top: 15px; min-height: 100px; padding: 15px; background: repeating-linear-gradient(rgba(255,255,255,0.5) 0, rgba(255,255,255,0.5) 24px, #ffb6c1 25px); border-radius: 8px; border: 1px dashed var(--secondary-color); }
@@ -115,7 +114,7 @@
             <div id="memorial-days" class="days-tag">第 1 天</div>
         </div>
         
-        <div id="header-avatar" style="display:none;"></div>
+        <div id="header-avatar" style="display:none;" onclick="triggerAvatarChange('other')"></div>
         <div id="status-text" style="display:none;"></div>
         
         <div class="music-toggle" onclick="toggleMusic()" title="点击展开音乐">
@@ -144,8 +143,8 @@
         </div>
 
         <div id="tab-contacts" class="tab-content active">
+            <p style="font-size:12px; color:var(--light-text); margin-bottom:10px;">这是你们专属的私密世界 ☁️</p>
             <div id="contact-list-container"></div>
-            <button class="btn-sub" style="margin-top:10px;" onclick="createNewContact()">+ 新建平行空间</button>
         </div>
 
         <div id="tab-words" class="tab-content">
@@ -172,10 +171,13 @@
             <p style="font-size:12px; color:var(--light-text); margin-bottom:5px;">🎵 网易云 iframe 播放器代码：</p>
             <textarea id="netease-input" class="setting-input" rows="2" onchange="updateNetease(this.value)" placeholder="在这里粘贴网易云生成的 <iframe ...> 代码"></textarea>
 
-            <p style="font-size:12px; color:var(--light-text); margin-bottom:5px;">专属全屏壁纸 (图床链接)：</p>
+            <p style="font-size:12px; color:var(--highlight); margin-bottom:5px;">⏳ 你发消息后，他思考的时间 (秒)：</p>
+            <input type="number" id="speed-input" class="setting-input" onchange="updateSpeed(this.value)" placeholder="输入秒数，决定他回消息有多快" min="1" max="60">
+
+            <p style="font-size:12px; color:var(--light-text); margin-bottom:5px; margin-top:10px;">专属全屏壁纸 (图床链接)：</p>
             <input type="text" id="wallpaper-url-input" class="setting-input" onchange="updateWallpaperUrl(this.value)" placeholder="输入图床高清壁纸链接...">
             
-            <p style="font-size:12px; color:var(--light-text); margin-bottom:5px;">相识日期：</p>
+            <p style="font-size:12px; color:var(--light-text); margin-bottom:5px; margin-top:10px;">相识日期：</p>
             <input type="date" id="date-input" class="setting-input" onchange="updateDate(this.value)">
         </div>
     </div>
@@ -266,6 +268,7 @@
             document.getElementById('wallpaper-url-input').value = currentChat.wallpaper || '';
             document.getElementById('date-input').value = currentChat.startDate;
             document.getElementById('netease-input').value = currentChat.neteaseCode || '';
+            document.getElementById('speed-input').value = currentChat.replySpeed || 5;
             
             if(currentChat.neteaseCode) {
                 document.getElementById('netease-container').innerHTML = currentChat.neteaseCode;
@@ -284,52 +287,26 @@
             let html = '';
             for (let id in appState.chats) {
                 const c = appState.chats[id];
-                const isActive = id === appState.activeId ? 'active' : '';
-                const bgStyle = isActive ? 'background: rgba(255,182,193,0.3); border-color: var(--highlight);' : 'background: rgba(255,255,255,0.8); border-color: var(--secondary-color);';
-                
-                const deleteBtn = Object.keys(appState.chats).length > 1 
-                    ? `<div style="color: var(--highlight); font-size: 13px; font-weight: bold; padding: 5px 10px; cursor: pointer; border-radius: 6px; background: rgba(255,141,161,0.1);" onclick="event.stopPropagation(); deleteContact('${id}')">删除</div>` 
-                    : '';
-
-                html += `<div style="display:flex; align-items:center; padding:12px; border:1px solid; border-radius:12px; margin-bottom:10px; cursor:pointer; ${bgStyle}" onclick="switchContact('${id}')">
-                    <div class="mini-avatar" style="background-image:url(${c.avatar}); margin-right:12px; width:40px; height:40px; border-radius:50%; border:2px solid white; box-shadow:0 2px 4px rgba(255,182,193,0.3);"></div>
+                html += `<div style="display:flex; align-items:center; padding:12px; border:1px solid var(--highlight); border-radius:12px; margin-bottom:10px; background: rgba(255,182,193,0.3);">
+                    <div class="mini-avatar" style="background-image:url(${c.avatar}); margin-right:12px; width:40px; height:40px; border-radius:50%; border:2px solid white; box-shadow:0 2px 4px rgba(255,182,193,0.3);" onclick="triggerAvatarChange('other')"></div>
                     <div style="flex:1;"><div style="font-size:15px; font-weight:bold; color:var(--text-color);">${c.name}</div>
-                    <div style="font-size:11px; color:var(--light-text); margin-top:2px;">${c.messages ? c.messages.length : 0} 条记忆</div></div>
-                    ${deleteBtn}
+                    <div style="font-size:11px; color:var(--light-text); margin-top:2px;">共沉淀了 ${c.messages ? c.messages.length : 0} 条美好记忆</div></div>
                     </div>`;
             }
             container.innerHTML = html;
-        }
-
-        function deleteContact(id) {
-            if (confirm(`确定要彻底删除这个空间吗？此操作不可逆哦！`)) {
-                delete appState.chats[id];
-                if (appState.activeId === id) {
-                    appState.activeId = Object.keys(appState.chats)[0];
-                }
-                save(); applyUI(); renderChat();
-            }
-        }
-
-        function switchContact(id) { 
-            appState.activeId = id; 
-            currentChat = appState.chats[id];
-            save(); applyUI(); renderChat(); toggleDrawer(); 
-        }
-
-        function createNewContact() {
-            const newName = prompt("给新的空间起个名字：");
-            if (newName && newName.trim()) {
-                const newId = 'chat_' + Date.now();
-                appState.chats[newId] = { name: newName.trim(), avatar: '', wallpaper: '', neteaseCode: '', startDate: new Date().toISOString().split('T')[0], messages: [], words: ["你好呀！"], replySpeed: 5 };
-                appState.activeId = newId; currentChat = appState.chats[newId]; save(); applyUI(); renderChat();
-            }
         }
 
         function updateNetease(code) { currentChat.neteaseCode = code; save(); applyUI(); }
         function toggleMusic() {
             const container = document.getElementById('netease-container');
             container.style.display = container.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function updateSpeed(val) { 
+            let speed = parseInt(val); 
+            if(isNaN(speed) || speed < 0) speed = 5; 
+            currentChat.replySpeed = speed; 
+            save(); 
         }
 
         function batchAddWords() {
@@ -360,17 +337,43 @@
             win.appendChild(row); scrollToBottom();
         }
 
+        // --- 核心修复：带停顿的连发思考机制 ---
         function autoReply() {
             if (isTyping || !currentChat.words.length) return; 
             isTyping = true;
             document.getElementById('ai-status').innerText = "[正在输入...]";
             
+            // 使用设置里的速度，默认 5 秒后回第一条
+            const speedMs = (currentChat.replySpeed || 5) * 1000;
+
             setTimeout(() => {
-                const item = currentChat.words[Math.floor(Math.random() * currentChat.words.length)];
-                sendMsg(item, 'other');
-                document.getElementById('ai-status').innerText = "[在线]";
-                isTyping = false;
-            }, 1500); 
+                // 随机决定回复 1 到 4 条消息
+                const replyCount = Math.floor(Math.random() * 4) + 1; 
+                let sentCount = 0;
+
+                function sendNext() {
+                    if (sentCount >= replyCount) {
+                        document.getElementById('ai-status').innerText = "[在线]";
+                        isTyping = false;
+                        return;
+                    }
+
+                    const item = currentChat.words[Math.floor(Math.random() * currentChat.words.length)];
+                    sendMsg(item, 'other');
+                    sentCount++;
+
+                    if (sentCount < replyCount) {
+                        document.getElementById('ai-status').innerText = "[正在输入...]";
+                        // 连发第二条的间隙时间：1秒 到 2.5秒随机
+                        setTimeout(sendNext, Math.floor(Math.random() * 1500) + 1000);
+                    } else {
+                        document.getElementById('ai-status').innerText = "[在线]";
+                        isTyping = false;
+                    }
+                }
+
+                sendNext();
+            }, speedMs); 
         }
 
         function scrollToBottom() { const c = document.getElementById('chat-window'); setTimeout(() => { c.scrollTo({ top: c.scrollHeight + 200, behavior: 'smooth' }); }, 50); }
@@ -439,12 +442,16 @@
                 sendMsg(text); msgInput.value = ''; 
                 sendBtn.innerText = '让他回'; sendBtn.style.color = 'var(--light-text)';
                 
+                // 30% 概率已读不回拦截
                 if (Math.random() < 0.3 && ignoredCount < 3) {
                     ignoredCount++; document.getElementById('ai-status').innerText = "[已读]"; 
                 } else {
                     ignoredCount = 0; autoReply(); 
                 }
-            } else { if (!isTyping) autoReply(); }
+            } else { 
+                // 空白输入点击索要回复
+                if (!isTyping) autoReply(); 
+            }
         };
         msgInput.onkeypress = (e) => { if(e.key==='Enter') sendBtn.click(); };
 
