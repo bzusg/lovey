@@ -311,6 +311,191 @@
             if (isTyping || !currentChat.words.length) return; 
             isTyping = true;
             document.getElementById('ai-status').innerText = "[正在输入...]";
+            let appState = {
+            selfAvatar: '', activeId: 'chat_1', globalEmojis: [], lastLeaveTime: Date.now(), 
+            chats: {
+                'chat_1': {
+                    name: 'Lovey', avatar: '', wallpaper: '', neteaseCode: '', startDate: new Date().toISOString().split('T')[0], messages: [],
+                    words: ["亲爱的/宝宝", "晚安好梦", "今天好累求抱抱", "贴贴"], replySpeed: 5
+                }
+            }
+        };
+
+        let currentChat = null; 
+        let isTyping = false; 
+        let ignoredCount = 0;
+
+        const statuses = ["忙碌", "睡觉", "吃饭", "想你", "发呆"];
+        function changeStatus() {
+            if (isTyping) return; 
+            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+            document.getElementById('ai-status').innerText = `[${randomStatus}]`;
+            setTimeout(changeStatus, Math.floor(Math.random() * 5 + 3) * 60000);
+        }
+
+        function init() {
+            const saved = localStorage.getItem('lovey_v8_state');
+            if (saved) { 
+                try { appState = JSON.parse(saved); } catch(e) {}
+            }
+            if (!appState.chats || Object.keys(appState.chats).length === 0) {
+                // 如果为空，重置一下基础数据
+                 appState.chats = { 'chat_1': { name: 'Lovey', avatar: '', wallpaper: '', neteaseCode: '', startDate: new Date().toISOString().split('T')[0], messages: [], words: ["亲爱的"], replySpeed: 5 } };
+            }
+            if (!appState.chats[appState.activeId]) appState.activeId = Object.keys(appState.chats)[0];
+            currentChat = appState.chats[appState.activeId];
+            
+            applyUI(); renderChat(); changeStatus(); checkLetterReply(); 
+        }
+
+        function save() { 
+            try { localStorage.setItem('lovey_v8_state', JSON.stringify(appState)); } catch(e) {} 
+        }
+
+        function exportData() {
+            try {
+                const dataStr = JSON.stringify(appState);
+                const blob = new Blob([dataStr], { type: "application/json" });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `Lovey_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+            } catch(e) { alert("导出失败哦");}
+        }
+
+        // 修复：完美的导入逻辑
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const parsed = JSON.parse(evt.target.result);
+                    if (parsed && parsed.chats) {
+                        appState = parsed;
+                        if (!appState.activeId || !appState.chats[appState.activeId]) { 
+                            appState.activeId = Object.keys(appState.chats)[0]; 
+                        }
+                        currentChat = appState.chats[appState.activeId];
+                        save(); applyUI(); renderChat(); 
+                        alert("✨ 记忆恢复成功！顾时夜的空间回来啦！");
+                    } else { alert("❌ 这个备份文件格式不对哦..."); }
+                } catch(err) { alert("❌ 读取失败，请确认是之前的备份文件！"); }
+                document.getElementById('import-file').value = ''; 
+            };
+            reader.readAsText(file);
+        }
+
+        function applyUI() {
+            currentChat = appState.chats[appState.activeId];
+            document.getElementById('display-name').innerText = currentChat.name;
+            document.getElementById('footer-self-avatar').style.backgroundImage = `url(${appState.selfAvatar})`;
+            document.body.style.backgroundImage = currentChat.wallpaper ? `url(${currentChat.wallpaper})` : 'none';
+            document.getElementById('wallpaper-url-input').value = currentChat.wallpaper || '';
+            document.getElementById('date-input').value = currentChat.startDate;
+            document.getElementById('netease-input').value = currentChat.neteaseCode || '';
+            
+            if(currentChat.neteaseCode) {
+                document.getElementById('netease-container').innerHTML = currentChat.neteaseCode;
+            }
+            
+            const diff = Math.floor(Math.abs(new Date() - new Date(currentChat.startDate)) / (1000*60*60*24)) + 1;
+            document.getElementById('memorial-days').innerText = `第 ${diff} 天`;
+            
+            renderWordList();
+            renderContactList(); // 修复：重新呼叫渲染联系人列表
+            isTyping = false;
+        }
+
+        // --- 修复：被我不小心删掉的联系人与新建空间核心代码 ---
+        function renderContactList() {
+            const container = document.getElementById('contact-list-container');
+            let html = '';
+            for (let id in appState.chats) {
+                const c = appState.chats[id];
+                const isActive = id === appState.activeId ? 'active' : '';
+                const bgStyle = isActive ? 'background: rgba(255,182,193,0.3); border-color: var(--highlight);' : 'background: rgba(255,255,255,0.8); border-color: var(--secondary-color);';
+                
+                // 核心：增加一个删除按钮（如果你只剩一个空间了，就不允许删除啦）
+                const deleteBtn = Object.keys(appState.chats).length > 1 
+                    ? `<div style="color: var(--highlight); font-size: 13px; font-weight: bold; padding: 5px 10px; cursor: pointer; border-radius: 6px; background: rgba(255,141,161,0.1);" onclick="event.stopPropagation(); deleteContact('${id}')">删除</div>` 
+                    : '';
+
+                html += `<div style="display:flex; align-items:center; padding:12px; border:1px solid; border-radius:12px; margin-bottom:10px; cursor:pointer; ${bgStyle}" onclick="switchContact('${id}')">
+                    <div class="mini-avatar" style="background-image:url(${c.avatar}); margin-right:12px; width:40px; height:40px; border-radius:50%; border:2px solid white; box-shadow:0 2px 4px rgba(255,182,193,0.3);"></div>
+                    <div style="flex:1;"><div style="font-size:15px; font-weight:bold; color:var(--text-color);">${c.name}</div>
+                    <div style="font-size:11px; color:var(--light-text); margin-top:2px;">${c.messages ? c.messages.length : 0} 条记忆</div></div>
+                    ${deleteBtn}
+                    </div>`;
+            }
+            container.innerHTML = html;
+        }
+        
+        // 新增的删除执行逻辑
+        function deleteContact(id) {
+            if (confirm(`确定要彻底删除这个空间吗？此操作不可逆哦！`)) {
+                delete appState.chats[id];
+                if (appState.activeId === id) {
+                    appState.activeId = Object.keys(appState.chats)[0];
+                }
+                save(); applyUI(); renderChat();
+            }
+        }
+
+        function switchContact(id) { 
+            appState.activeId = id; 
+            currentChat = appState.chats[id];
+            save(); applyUI(); renderChat(); toggleDrawer(); 
+        }
+
+        function createNewContact() {
+            const newName = prompt("给新的空间起个名字：");
+            if (newName && newName.trim()) {
+                const newId = 'chat_' + Date.now();
+                appState.chats[newId] = { name: newName.trim(), avatar: '', wallpaper: '', neteaseCode: '', startDate: new Date().toISOString().split('T')[0], messages: [], words: ["你好呀！"], replySpeed: 5 };
+                appState.activeId = newId; currentChat = appState.chats[newId]; save(); applyUI(); renderChat();
+            }
+        }
+        // -----------------------------------------------------
+
+        function updateNetease(code) { currentChat.neteaseCode = code; save(); applyUI(); }
+        function toggleMusic() {
+            const container = document.getElementById('netease-container');
+            container.style.display = container.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function batchAddWords() {
+            const lines = document.getElementById('batch-word-input').value.split('\n');
+            lines.forEach(line => { if (line.trim()) currentChat.words.push(line.trim()); });
+            document.getElementById('batch-word-input').value = ''; save(); renderWordList();
+        }
+        function renderWordList() { 
+            document.getElementById('word-list').innerHTML = currentChat.words.map((w, i) => `<div style="padding:8px; border-bottom:1px dashed #eee; font-size:13px">${w} <span style="color:#ffb6c1; cursor:pointer; float:right;" onclick="currentChat.words.splice(${i},1);save();renderWordList()">删</span></div>`).join(''); 
+        }
+
+        function sendMsg(text, type='self') {
+            const msg = { text, type, id: Date.now() };
+            currentChat.messages.push(msg); renderSingleMsg(msg); save();
+        }
+
+        function renderSingleMsg(m) {
+            const win = document.getElementById('chat-window'); const row = document.createElement('div');
+            row.className = `msg-row ${m.type==='self'?'row-self self':'other'}`;
+            const avatarImg = m.type === 'self' ? appState.selfAvatar : currentChat.avatar;
+            const av = `<div class="mini-avatar" style="background-image:url(${avatarImg})"></div>`;
+            
+            const date = new Date(m.id);
+            const timeStr = date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+            const timeSpan = `<span class="msg-time">${timeStr}</span>`;
+            
+            row.innerHTML = m.type==='self' ? `<div class="bubble"><span>${m.text}</span>${timeSpan}</div>${av}` : `${av}<div class="bubble"><span>${m.text}</span>${timeSpan}</div>`;
+            win.appendChild(row); scrollToBottom();
+        }
+
+        function autoReply() {
+            if (isTyping || !currentChat.words.length) return; 
+            isTyping = true;
+            document.getElementById('ai-status').innerText = "[正在输入...]";
             
             setTimeout(() => {
                 const item = currentChat.words[Math.floor(Math.random() * currentChat.words.length)];
@@ -328,15 +513,13 @@
         function switchTab(t) { document.querySelectorAll('.tab-btn, .tab-content').forEach(el=>el.classList.remove('active')); event.target.classList.add('active'); document.getElementById(`tab-${t}`).classList.add('active'); }
         function toggleDrawer() { document.getElementById('library-drawer').classList.toggle('open'); }
 
-        // --- 新增：独立信件与字卡系统 ---
         function sendLetter() {
             const text = document.getElementById('letter-input').value.trim();
             if(!text) return;
-            // 设定在 10秒 ~ 60秒后随机回信 (为了测试不让你等太久48小时，这里改短了)
             const replyTime = Date.now() + Math.floor(Math.random() * 50000) + 10000; 
             localStorage.setItem('lovey_letter', JSON.stringify({ content: text, replyTime: replyTime, replied: false }));
             document.getElementById('letter-input').value = '';
-            alert("信件已寄出，随风飘往他的方向...🕊️ (抽屉关掉等一会再打开看看)");
+            alert("信件已寄出，随风飘往他的方向...🕊️");
         }
 
         function checkLetterReply() {
@@ -348,55 +531,44 @@
                         letter.replied = true;
                         localStorage.setItem('lovey_letter', JSON.stringify(letter));
                         
-                        // 生成随机回复并用字卡包装
                         const pool = ["想你了", "乖，我一直都在", "收到了，抱抱", "不许胡思乱想", "等我回来"];
                         const replyText = pool[Math.floor(Math.random() * pool.length)];
                         
                         const container = document.getElementById('letter-reply-box');
                         const cardsHtml = replyText.split('').map(char => {
-                            const rotate = (Math.random() - 0.5) * 2; // -1到1的随机数
+                            const rotate = (Math.random() - 0.5) * 2; 
                             return `<span class="word-card" style="--random-rotation:${rotate}">${char}</span>`;
                         }).join('');
                         container.innerHTML = cardsHtml;
                     }
                 }
-            }, 5000); // 每5秒检查一次信箱
+            }, 5000); 
         }
 
-        // --- 修改：交互按钮逻辑 & 30% 已读不回 ---
         const msgInput = document.getElementById('msg-input');
         const sendBtn = document.getElementById('send-btn');
         
         msgInput.addEventListener('input', () => {
-            if (msgInput.value.trim()) {
-                sendBtn.innerText = '发送'; sendBtn.style.color = 'var(--highlight)';
-            } else {
-                sendBtn.innerText = '让他回'; sendBtn.style.color = 'var(--light-text)';
-            }
+            if (msgInput.value.trim()) { sendBtn.innerText = '发送'; sendBtn.style.color = 'var(--highlight)'; } 
+            else { sendBtn.innerText = '让他回'; sendBtn.style.color = 'var(--light-text)'; }
         });
 
         sendBtn.onclick = () => { 
             const text = msgInput.value.trim();
             if (text) { 
-                sendMsg(text); 
-                msgInput.value = ''; 
+                sendMsg(text); msgInput.value = ''; 
                 sendBtn.innerText = '让他回'; sendBtn.style.color = 'var(--light-text)';
                 
-                // 30% 概率已读不回，且连续不回不超过3次
                 if (Math.random() < 0.3 && ignoredCount < 3) {
-                    ignoredCount++;
-                    document.getElementById('ai-status').innerText = "[已读]"; // 假装看过了
+                    ignoredCount++; document.getElementById('ai-status').innerText = "[已读]"; 
                 } else {
-                    ignoredCount = 0;
-                    autoReply(); 
+                    ignoredCount = 0; autoReply(); 
                 }
-            } else {
-                if (!isTyping) autoReply(); // 空白点击，主动索要回复
-            }
+            } else { if (!isTyping) autoReply(); }
         };
         msgInput.onkeypress = (e) => { if(e.key==='Enter') sendBtn.click(); };
 
         init();
-    </script>
+        </script>
 </body>
 </html>
