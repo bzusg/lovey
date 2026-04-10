@@ -440,6 +440,130 @@
                 }
                 save(); applyUI(); renderChat();
             }
+        }let appState = {
+            selfAvatar: '', activeId: 'chat_1', globalEmojis: [], lastLeaveTime: Date.now(), 
+            chats: {
+                'chat_1': {
+                    name: 'Lovey', avatar: '', wallpaper: '', neteaseCode: '', startDate: new Date().toISOString().split('T')[0], messages: [],
+                    words: ["亲爱的/宝宝", "晚安好梦", "今天好累求抱抱", "贴贴"], replySpeed: 5
+                }
+            }
+        };
+
+        let currentChat = null; 
+        let isTyping = false; 
+        let ignoredCount = 0;
+
+        const statuses = ["忙碌", "睡觉", "吃饭", "想你", "发呆"];
+        function changeStatus() {
+            if (isTyping) return; 
+            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+            document.getElementById('ai-status').innerText = `[${randomStatus}]`;
+            setTimeout(changeStatus, Math.floor(Math.random() * 5 + 3) * 60000);
+        }
+
+        function init() {
+            const saved = localStorage.getItem('lovey_v8_state');
+            if (saved) { 
+                try { appState = JSON.parse(saved); } catch(e) {}
+            }
+            if (!appState.chats || Object.keys(appState.chats).length === 0) {
+                 appState.chats = { 'chat_1': { name: 'Lovey', avatar: '', wallpaper: '', neteaseCode: '', startDate: new Date().toISOString().split('T')[0], messages: [], words: ["亲爱的"], replySpeed: 5 } };
+            }
+            if (!appState.chats[appState.activeId]) appState.activeId = Object.keys(appState.chats)[0];
+            currentChat = appState.chats[appState.activeId];
+            
+            applyUI(); renderChat(); changeStatus(); checkLetterReply(); 
+        }
+
+        function save() { 
+            try { localStorage.setItem('lovey_v8_state', JSON.stringify(appState)); } catch(e) {} 
+        }
+
+        function exportData() {
+            try {
+                const dataStr = JSON.stringify(appState);
+                const blob = new Blob([dataStr], { type: "application/json" });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `Lovey_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+            } catch(e) { alert("导出失败哦");}
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const parsed = JSON.parse(evt.target.result);
+                    if (parsed && parsed.chats) {
+                        appState = parsed;
+                        if (!appState.activeId || !appState.chats[appState.activeId]) { 
+                            appState.activeId = Object.keys(appState.chats)[0]; 
+                        }
+                        currentChat = appState.chats[appState.activeId];
+                        save(); applyUI(); renderChat(); 
+                        alert("✨ 记忆恢复成功！");
+                    } else { alert("❌ 这个备份文件格式不对哦..."); }
+                } catch(err) { alert("❌ 读取失败，请确认是之前的备份文件！"); }
+                document.getElementById('import-file').value = ''; 
+            };
+            reader.readAsText(file);
+        }
+
+        function applyUI() {
+            currentChat = appState.chats[appState.activeId];
+            document.getElementById('display-name').innerText = currentChat.name;
+            document.getElementById('footer-self-avatar').style.backgroundImage = `url(${appState.selfAvatar})`;
+            document.body.style.backgroundImage = currentChat.wallpaper ? `url(${currentChat.wallpaper})` : 'none';
+            document.getElementById('wallpaper-url-input').value = currentChat.wallpaper || '';
+            document.getElementById('date-input').value = currentChat.startDate;
+            document.getElementById('netease-input').value = currentChat.neteaseCode || '';
+            
+            if(currentChat.neteaseCode) {
+                document.getElementById('netease-container').innerHTML = currentChat.neteaseCode;
+            }
+            
+            const diff = Math.floor(Math.abs(new Date() - new Date(currentChat.startDate)) / (1000*60*60*24)) + 1;
+            document.getElementById('memorial-days').innerText = `第 ${diff} 天`;
+            
+            renderWordList();
+            renderContactList(); 
+            isTyping = false;
+        }
+
+        function renderContactList() {
+            const container = document.getElementById('contact-list-container');
+            let html = '';
+            for (let id in appState.chats) {
+                const c = appState.chats[id];
+                const isActive = id === appState.activeId ? 'active' : '';
+                const bgStyle = isActive ? 'background: rgba(255,182,193,0.3); border-color: var(--highlight);' : 'background: rgba(255,255,255,0.8); border-color: var(--secondary-color);';
+                
+                const deleteBtn = Object.keys(appState.chats).length > 1 
+                    ? `<div style="color: var(--highlight); font-size: 13px; font-weight: bold; padding: 5px 10px; cursor: pointer; border-radius: 6px; background: rgba(255,141,161,0.1);" onclick="event.stopPropagation(); deleteContact('${id}')">删除</div>` 
+                    : '';
+
+                html += `<div style="display:flex; align-items:center; padding:12px; border:1px solid; border-radius:12px; margin-bottom:10px; cursor:pointer; ${bgStyle}" onclick="switchContact('${id}')">
+                    <div class="mini-avatar" style="background-image:url(${c.avatar}); margin-right:12px; width:40px; height:40px; border-radius:50%; border:2px solid white; box-shadow:0 2px 4px rgba(255,182,193,0.3);"></div>
+                    <div style="flex:1;"><div style="font-size:15px; font-weight:bold; color:var(--text-color);">${c.name}</div>
+                    <div style="font-size:11px; color:var(--light-text); margin-top:2px;">${c.messages ? c.messages.length : 0} 条记忆</div></div>
+                    ${deleteBtn}
+                    </div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function deleteContact(id) {
+            if (confirm(`确定要彻底删除这个空间吗？此操作不可逆哦！`)) {
+                delete appState.chats[id];
+                if (appState.activeId === id) {
+                    appState.activeId = Object.keys(appState.chats)[0];
+                }
+                save(); applyUI(); renderChat();
+            }
         }
 
         function switchContact(id) { 
@@ -456,7 +580,6 @@
                 appState.activeId = newId; currentChat = appState.chats[newId]; save(); applyUI(); renderChat();
             }
         }
-        // -----------------------------------------------------
 
         function updateNetease(code) { currentChat.neteaseCode = code; save(); applyUI(); }
         function toggleMusic() {
