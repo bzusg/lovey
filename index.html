@@ -40,7 +40,6 @@
         .name { font-size: 15px; letter-spacing: 1px; font-weight: bold; color: var(--text-color); }
         .days-tag { font-size: 11px; color: var(--highlight); background: none; padding: 0; margin: 0; display: inline-block; }
         
-        /* 状态显示 UI */
         #ai-status { font-size: 10px; color: var(--light-text); background: rgba(255, 255, 255, 0.6); padding: 2px 6px; border-radius: 8px; margin-left: 5px; }
 
         .music-toggle { position: absolute; right: 20px; cursor: pointer; padding: 10px; }
@@ -60,14 +59,22 @@
         .msg-row { display: flex; align-items: flex-start; gap: 10px; max-width: 88%; }
         .row-self { flex-direction: row-reverse; align-self: flex-end; }
         .mini-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: var(--accent-color) center/cover; border: 1px solid #fff; }
+        /* 给气泡加 cursor: pointer 提示可以点击引用 */
         .bubble { 
             padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.5; 
             backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); 
-            box-shadow: 0 2px 5px rgba(255, 182, 193, 0.2); word-wrap: break-word; 
+            box-shadow: 0 2px 5px rgba(255, 182, 193, 0.2); word-wrap: break-word; cursor: pointer;
         }
         .self .bubble { background: var(--message-self); color: var(--text-self); border-top-right-radius: 4px; }
         .other .bubble { background: var(--message-other); color: var(--text-other); border-top-left-radius: 4px; }
         .img-content { max-width: 140px; border-radius: 12px; display: block; }
+
+        /* 引用内容气泡内的样式 */
+        .quote-block { font-size: 11px; background: rgba(255,255,255,0.4); padding: 4px 8px; border-radius: 6px; margin-bottom: 6px; border-left: 3px solid rgba(255,255,255,0.8); color: inherit; opacity: 0.9; }
+
+        /* 输入框上方的引用预览区 */
+        #quote-preview { position: fixed; bottom: 65px; left: 0; width: 100%; background: rgba(255,245,247,0.9); padding: 8px 15px; font-size: 12px; color: var(--light-text); border-top: 1px dashed var(--secondary-color); z-index: 99; display: none; justify-content: space-between; align-items: center; box-shadow: 0 -2px 10px rgba(255,182,193,0.1); }
+        #quote-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 85%; }
 
         footer { 
             height: 65px; background: rgba(255, 230, 235, 0.8); 
@@ -94,11 +101,9 @@
         .setting-input { width: 100%; padding: 10px; border: 1px solid var(--secondary-color); border-radius: 8px; margin-bottom: 10px; font-size: 13px; background: rgba(255,255,255,0.8); outline: none; font-family: "LXGW WenKai", sans-serif; color: var(--text-color); }
         .btn-main { width: 100%; padding: 12px; background: var(--highlight); color: white; border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; font-family: "LXGW WenKai", sans-serif; box-shadow: 0 2px 6px rgba(255,141,161,0.4); }
         
-        /* 拼贴字卡特效 */
         #letter-reply-box { margin-top: 15px; min-height: 100px; padding: 15px; background: repeating-linear-gradient(rgba(255,255,255,0.5) 0, rgba(255,255,255,0.5) 24px, #ffb6c1 25px); border-radius: 8px; border: 1px dashed var(--secondary-color); }
         .word-card { display: inline-block; background-color: #ffffff; border: 1px solid #ffb6c1; border-radius: 2px; padding: 2px 6px; margin: 3px; color: #d18292; box-shadow: 1px 1px 3px rgba(255, 182, 193, 0.4); font-weight: bold; font-family: sans-serif; }
 
-        /* 网易云播放器容器 */
         #netease-container { position: absolute; top: 45px; right: 10px; z-index: 99; display: none; background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
 
         #wallpaper-file, #avatar-file, #import-file { display: none; }
@@ -115,7 +120,6 @@
         </div>
         
         <div id="header-avatar" style="display:none;" onclick="triggerAvatarChange('other')"></div>
-        <div id="status-text" style="display:none;"></div>
         
         <div class="music-toggle" onclick="toggleMusic()" title="点击展开音乐">
             <svg id="music-svg" class="music-icon" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
@@ -125,6 +129,11 @@
     <div id="netease-container"></div>
 
     <div id="chat-window"></div>
+
+    <div id="quote-preview">
+        <span id="quote-text"></span>
+        <span onclick="cancelQuote()" style="cursor:pointer; color:var(--highlight); font-size:16px; font-weight:bold;">×</span>
+    </div>
 
     <footer>
         <div onclick="toggleDrawer()" style="cursor:pointer; font-size:24px; color:var(--highlight); font-weight:bold; padding:0 5px;">+</div>
@@ -187,6 +196,9 @@
     <input type="file" id="import-file" accept=".json,.txt" onchange="importData(event)">
 
     <script>
+        // 【注意！】记得分别在易遇和顾时夜的仓库里，把这里的 lovey_v8_state 换成专属名字哦！
+        const STORAGE_KEY = 'lovey_yiyu_state'; 
+
         let appState = {
             selfAvatar: '', activeId: 'chat_1', globalEmojis: [], lastLeaveTime: Date.now(), 
             chats: {
@@ -200,6 +212,8 @@
         let currentChat = null; 
         let isTyping = false; 
         let ignoredCount = 0; 
+        let currentQuote = ''; // 保存当前引用的文本
+        let dropTimer = null; // 不定时回复的定时器
 
         const statuses = ["忙碌", "睡觉", "吃饭", "想你", "发呆"];
         function changeStatus() {
@@ -209,8 +223,20 @@
             setTimeout(changeStatus, Math.floor(Math.random() * 5 + 3) * 60000);
         }
 
+        // --- 核心新增：不定时随机回复功能 ---
+        function startDropTimer() {
+            if (dropTimer) clearInterval(dropTimer);
+            dropTimer = setInterval(() => {
+                if (isTyping || !currentChat.words.length || document.visibilityState === 'hidden') return;
+                // 每隔 1 分钟检测一次，有 10% 的概率主动给你发消息
+                if (Math.random() < 0.10) {
+                    autoReply(true); 
+                }
+            }, 60000); 
+        }
+
         function init() {
-            const saved = localStorage.getItem('lovey_yiyu_state');
+            const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) { 
                 try { appState = JSON.parse(saved); } catch(e) {}
             }
@@ -221,10 +247,11 @@
             currentChat = appState.chats[appState.activeId];
             
             applyUI(); renderChat(); changeStatus(); checkLetterReply(); 
+            startDropTimer(); // 启动惊喜掉落定时器
         }
 
         function save() { 
-            try { localStorage.setItem('lovey_yiyu_state', JSON.stringify(appState)); } catch(e) {} 
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); } catch(e) {} 
         }
 
         function exportData() {
@@ -301,7 +328,6 @@
             const container = document.getElementById('netease-container');
             container.style.display = container.style.display === 'block' ? 'none' : 'block';
         }
-
         function updateSpeed(val) { 
             let speed = parseInt(val); 
             if(isNaN(speed) || speed < 0) speed = 5; 
@@ -318,8 +344,31 @@
             document.getElementById('word-list').innerHTML = currentChat.words.map((w, i) => `<div style="padding:8px; border-bottom:1px dashed #eee; font-size:13px">${w} <span style="color:#ffb6c1; cursor:pointer; float:right;" onclick="currentChat.words.splice(${i},1);save();renderWordList()">删</span></div>`).join(''); 
         }
 
+        // --- 核心新增：消息引用功能 ---
+        function setQuote(text) {
+            // 去掉可能的 HTML 标签，只保留纯文本
+            let plainText = text.replace(/<[^>]+>/g, '');
+            // 如果文本太长截取一下
+            if (plainText.length > 20) plainText = plainText.substring(0, 20) + '...';
+            
+            currentQuote = plainText;
+            document.getElementById('quote-text').innerText = `🔗 引用: ${currentQuote}`;
+            document.getElementById('quote-preview').style.display = 'flex';
+        }
+        function cancelQuote() {
+            currentQuote = '';
+            document.getElementById('quote-preview').style.display = 'none';
+        }
+
         function sendMsg(text, type='self') {
-            const msg = { text, type, id: Date.now() };
+            let finalMsg = text;
+            // 如果是自己发的消息，且存在引用内容，则打包在一起
+            if (type === 'self' && currentQuote) {
+                finalMsg = `<div class="quote-block">引用: ${currentQuote}</div>${text}`;
+                cancelQuote(); // 发送完清空引用
+            }
+
+            const msg = { text: finalMsg, type, id: Date.now() };
             currentChat.messages.push(msg); renderSingleMsg(msg); save();
         }
 
@@ -333,21 +382,22 @@
             const timeStr = date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
             const timeSpan = `<span class="msg-time">${timeStr}</span>`;
             
-            row.innerHTML = m.type==='self' ? `<div class="bubble"><span>${m.text}</span>${timeSpan}</div>${av}` : `${av}<div class="bubble"><span>${m.text}</span>${timeSpan}</div>`;
+            // 为了防止转义，把需要引用的纯文本提取出来传给 onclick
+            const rawText = m.text.replace(/'/g, "\\'"); 
+            
+            row.innerHTML = m.type==='self' ? `<div class="bubble" onclick="setQuote('${rawText}')"><span>${m.text}</span>${timeSpan}</div>${av}` : `${av}<div class="bubble" onclick="setQuote('${rawText}')"><span>${m.text}</span>${timeSpan}</div>`;
             win.appendChild(row); scrollToBottom();
         }
 
-        // --- 核心修复：带停顿的连发思考机制 ---
-        function autoReply() {
+        function autoReply(isUnprompted = false) {
             if (isTyping || !currentChat.words.length) return; 
             isTyping = true;
             document.getElementById('ai-status').innerText = "[正在输入...]";
             
-            // 使用设置里的速度，默认 5 秒后回第一条
-            const speedMs = (currentChat.replySpeed || 5) * 1000;
+            // 如果是不定时掉落，思考时间变短（模拟突然想到你）
+            const speedMs = isUnprompted ? 2000 : (currentChat.replySpeed || 5) * 1000;
 
             setTimeout(() => {
-                // 随机决定回复 1 到 4 条消息
                 const replyCount = Math.floor(Math.random() * 4) + 1; 
                 let sentCount = 0;
 
@@ -364,7 +414,6 @@
 
                     if (sentCount < replyCount) {
                         document.getElementById('ai-status').innerText = "[正在输入...]";
-                        // 连发第二条的间隙时间：1秒 到 2.5秒随机
                         setTimeout(sendNext, Math.floor(Math.random() * 1500) + 1000);
                     } else {
                         document.getElementById('ai-status').innerText = "[在线]";
@@ -442,18 +491,22 @@
                 sendMsg(text); msgInput.value = ''; 
                 sendBtn.innerText = '让他回'; sendBtn.style.color = 'var(--light-text)';
                 
-                // 30% 概率已读不回拦截
                 if (Math.random() < 0.3 && ignoredCount < 3) {
                     ignoredCount++; document.getElementById('ai-status').innerText = "[已读]"; 
                 } else {
                     ignoredCount = 0; autoReply(); 
                 }
-            } else { 
-                // 空白输入点击索要回复
-                if (!isTyping) autoReply(); 
-            }
+            } else { if (!isTyping) autoReply(); }
         };
         msgInput.onkeypress = (e) => { if(e.key==='Enter') sendBtn.click(); };
+
+        // 页面切换时同步离线检测
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === 'visible' && !isTyping && currentChat.words.length > 0) {
+                // 如果页面从后台切回来，有 20% 概率触发他的消息（就像你刚打开手机他就发来信息一样）
+                if (Math.random() < 0.2) autoReply(true);
+            }
+        });
 
         init();
     </script>
