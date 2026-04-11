@@ -210,7 +210,7 @@
         }
 
         function init() {
-            const saved = localStorage.getItem('lovey_v8_state');
+            const saved = localStorage.getItem('lovey_yiyu_state');
             if (saved) { 
                 try { appState = JSON.parse(saved); } catch(e) {}
             }
@@ -224,7 +224,7 @@
         }
 
         function save() { 
-            try { localStorage.setItem('lovey_v8_state', JSON.stringify(appState)); } catch(e) {} 
+            try { localStorage.setItem('lovey_yiyu_state', JSON.stringify(appState)); } catch(e) {} 
         }
 
         function exportData() {
