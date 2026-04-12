@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdn.staticfile.net/lxgw-wenkai-webfont/1.6.0/style.css">
     <style>
         :root {
-            /* 全局雾面粉配色 */
             --primary-color: #ffe6eb; 
             --secondary-color: #ffb6c1; 
             --accent-color: #d18292;
@@ -28,7 +27,6 @@
             display: flex; flex-direction: column; overflow: hidden; transition: background 0.4s;
         }
 
-        /* 极限超窄顶栏 & 雾面粉效果 */
         header {
             height: 45px; 
             background: rgba(255, 230, 235, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -59,7 +57,6 @@
         .msg-row { display: flex; align-items: flex-start; gap: 10px; max-width: 88%; }
         .row-self { flex-direction: row-reverse; align-self: flex-end; }
         .mini-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: var(--accent-color) center/cover; border: 1px solid #fff; }
-        /* 给气泡加 cursor: pointer 提示可以点击引用 */
         .bubble { 
             padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.5; 
             backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); 
@@ -69,10 +66,8 @@
         .other .bubble { background: var(--message-other); color: var(--text-other); border-top-left-radius: 4px; }
         .img-content { max-width: 140px; border-radius: 12px; display: block; }
 
-        /* 引用内容气泡内的样式 */
         .quote-block { font-size: 11px; background: rgba(255,255,255,0.4); padding: 4px 8px; border-radius: 6px; margin-bottom: 6px; border-left: 3px solid rgba(255,255,255,0.8); color: inherit; opacity: 0.9; }
 
-        /* 输入框上方的引用预览区 */
         #quote-preview { position: fixed; bottom: 65px; left: 0; width: 100%; background: rgba(255,245,247,0.9); padding: 8px 15px; font-size: 12px; color: var(--light-text); border-top: 1px dashed var(--secondary-color); z-index: 99; display: none; justify-content: space-between; align-items: center; box-shadow: 0 -2px 10px rgba(255,182,193,0.1); }
         #quote-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 85%; }
 
@@ -80,7 +75,7 @@
             height: 65px; background: rgba(255, 230, 235, 0.8); 
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
             position: fixed; bottom: 0; width: 100%; display: flex; 
-            padding: 0 15px; align-items: center; gap: 10px; z-index: 100; 
+            padding: 0 10px; align-items: center; gap: 8px; z-index: 100; 
             padding-bottom: env(safe-area-inset-bottom); border-top: 1px solid rgba(255, 255, 255, 0.5);
         }
         #msg-input { 
@@ -89,24 +84,29 @@
             padding: 0 15px; outline: none; font-size: 14px; 
             font-family: "LXGW WenKai", sans-serif; color: var(--text-color);
         }
+        /* 修复按钮被挤出去的问题 */
+        #send-btn { flex-shrink: 0; min-width: 50px; text-align: center; }
 
         #library-drawer { position: fixed; bottom: -90%; left: 0; width: 100%; height: 85%; background: rgba(255,245,247,0.95); backdrop-filter: blur(20px); z-index: 500; border-top: 1px solid var(--secondary-color); border-radius: 20px 20px 0 0; transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; flex-direction: column; padding: 20px; box-shadow: 0 -5px 20px rgba(255,182,193,0.3); }
         #library-drawer.open { bottom: 0; }
         .drawer-tabs { display: flex; justify-content: space-between; border-bottom: 1px solid var(--secondary-color); padding-bottom: 10px; overflow-x: auto; white-space: nowrap; }
-        .tab-btn { background: none; border: none; color: var(--light-text); cursor: pointer; font-size: 13px; padding: 5px 10px; font-family: "LXGW WenKai", sans-serif; }
+        .tab-btn { background: none; border: none; color: var(--light-text); cursor: pointer; font-size: 13px; padding: 5px 8px; font-family: "LXGW WenKai", sans-serif; }
         .tab-btn.active { color: var(--highlight); font-weight: bold; border-bottom: 2px solid var(--highlight); }
         .tab-content { display: none; padding-top: 15px; flex: 1; overflow-y: auto; }
         .tab-content.active { display: block; }
         
         .setting-input { width: 100%; padding: 10px; border: 1px solid var(--secondary-color); border-radius: 8px; margin-bottom: 10px; font-size: 13px; background: rgba(255,255,255,0.8); outline: none; font-family: "LXGW WenKai", sans-serif; color: var(--text-color); }
         .btn-main { width: 100%; padding: 12px; background: var(--highlight); color: white; border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; font-family: "LXGW WenKai", sans-serif; box-shadow: 0 2px 6px rgba(255,141,161,0.4); }
+        .btn-sub { width: 100%; padding: 12px; background: rgba(255,182,193,0.2); color: var(--text-color); border: 1px solid var(--secondary-color); border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; font-family: "LXGW WenKai", sans-serif; font-weight: bold; }
+        .btn-danger { width: 100%; padding: 12px; background: #e1b2b2; color: white; border: none; border-radius: 8px; margin-bottom: 10px; font-size: 14px; cursor: pointer; opacity: 0.9; font-family: "LXGW WenKai", sans-serif; }
+
+        .emoji-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .emoji-box { position: relative; width: 100%; aspect-ratio: 1; border-radius: 8px; background: center/cover; cursor: pointer; border: 1px solid #eee; }
+        .del-badge { position: absolute; top: -5px; right: -5px; background: rgba(200,100,100,0.8); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; text-align: center; line-height: 18px; }
         
-        #letter-reply-box { margin-top: 15px; min-height: 100px; padding: 15px; background: repeating-linear-gradient(rgba(255,255,255,0.5) 0, rgba(255,255,255,0.5) 24px, #ffb6c1 25px); border-radius: 8px; border: 1px dashed var(--secondary-color); }
         .word-card { display: inline-block; background-color: #ffffff; border: 1px solid #ffb6c1; border-radius: 2px; padding: 2px 6px; margin: 3px; color: #d18292; box-shadow: 1px 1px 3px rgba(255, 182, 193, 0.4); font-weight: bold; font-family: sans-serif; }
 
-        #netease-container { position: absolute; top: 45px; right: 10px; z-index: 99; display: none; background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-
-        #wallpaper-file, #avatar-file, #import-file { display: none; }
+        #wallpaper-file, #emoji-file, #avatar-file, #import-file { display: none; }
     </style>
 </head>
 <body>
@@ -121,12 +121,10 @@
         
         <div id="header-avatar" style="display:none;" onclick="triggerAvatarChange('other')"></div>
         
-        <div class="music-toggle" onclick="toggleMusic()" title="点击展开音乐">
+        <div class="music-toggle" onclick="toggleMusic()" title="点击播放音乐">
             <svg id="music-svg" class="music-icon" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
         </div>
     </header>
-
-    <div id="netease-container"></div>
 
     <div id="chat-window"></div>
 
@@ -146,9 +144,9 @@
         <div class="drawer-tabs">
             <button class="tab-btn active" onclick="switchTab('contacts')">空间</button>
             <button class="tab-btn" onclick="switchTab('words')">记忆</button>
+            <button class="tab-btn" onclick="switchTab('emojis')">🎨 表情</button>
             <button class="tab-btn" onclick="switchTab('letter')">✉️ 信箱</button>
             <button class="tab-btn" onclick="switchTab('settings')">设置</button>
-            <button class="tab-btn" onclick="toggleDrawer()" style="color:var(--highlight)">收起 ▼</button>
         </div>
 
         <div id="tab-contacts" class="tab-content active">
@@ -162,12 +160,25 @@
             <div id="word-list" style="margin-top:10px;"></div>
         </div>
 
+        <div id="tab-emojis" class="tab-content">
+            <p style="font-size:12px; color:var(--light-text); margin-bottom:10px;">✨ 全局共享表情库</p>
+            <div style="display:flex; gap:5px; margin-bottom:10px;">
+                <input type="text" id="emoji-url-input" class="setting-input" style="margin:0;" placeholder="贴入图床表情链接 (.jpg/.png)">
+                <button class="btn-main" style="width:auto; padding:0 15px; margin:0;" onclick="addEmojiUrl()">添加</button>
+            </div>
+            <button onclick="document.getElementById('emoji-file').click()" class="btn-sub">或：本地相册批量压缩上传</button>
+            <button class="btn-danger" style="margin-top:10px;" onclick="clearEmojis()">清空全局表情库</button>
+            <div id="emoji-list" class="emoji-grid" style="margin-top:10px;"></div>
+        </div>
+
         <div id="tab-letter" class="tab-content">
-            <p style="font-size:12px; color:var(--light-text); margin-bottom:10px;">把想说的话写在信里寄给他，他会在忙完后用拼贴字卡回复你哦。</p>
+            <p style="font-size:12px; color:var(--light-text); margin-bottom:10px;">把想说的话写在信里寄给他，他会在忙完后回复你哦。</p>
             <textarea id="letter-input" class="setting-input" rows="4" placeholder="写下你的碎碎念..."></textarea>
             <button class="btn-main" onclick="sendLetter()">寄出信件 🕊️</button>
-            <p style="font-size:12px; color:var(--highlight); margin-top:15px;">📫 回信记录：</p>
-            <div id="letter-reply-box"><span style="color:#ccc; font-size:12px;">暂无回信...等他慢慢写</span></div>
+            <p style="font-size:12px; color:var(--highlight); margin-top:15px; font-weight:bold;">📫 我们的往来信件：</p>
+            <div id="letter-history-box" style="margin-top: 10px; height: 300px; overflow-y: auto;">
+                <span style="color:#ccc; font-size:12px;">暂无过往信件...</span>
+            </div>
         </div>
 
         <div id="tab-settings" class="tab-content">
@@ -177,8 +188,8 @@
                 <button class="btn-main" onclick="document.getElementById('import-file').click()" style="flex:1; margin:0; background:var(--accent-color);">恢复倒入</button>
             </div>
 
-            <p style="font-size:12px; color:var(--light-text); margin-bottom:5px;">🎵 网易云 iframe 播放器代码：</p>
-            <textarea id="netease-input" class="setting-input" rows="2" onchange="updateNetease(this.value)" placeholder="在这里粘贴网易云生成的 <iframe ...> 代码"></textarea>
+            <p style="font-size:12px; color:var(--light-text); margin-bottom:5px;">🎵 网易云唤起链接：</p>
+            <textarea id="netease-input" class="setting-input" rows="2" onchange="updateNetease(this.value)" placeholder="在这里粘贴网易云的分享链接"></textarea>
 
             <p style="font-size:12px; color:var(--highlight); margin-bottom:5px;">⏳ 你发消息后，他思考的时间 (秒)：</p>
             <input type="number" id="speed-input" class="setting-input" onchange="updateSpeed(this.value)" placeholder="输入秒数，决定他回消息有多快" min="1" max="60">
@@ -192,11 +203,12 @@
     </div>
 
     <input type="file" id="wallpaper-file" accept="image/*">
+    <input type="file" id="emoji-file" accept="image/*" multiple>
     <input type="file" id="avatar-file" accept="image/*">
     <input type="file" id="import-file" accept=".json,.txt" onchange="importData(event)">
 
     <script>
-        // 【注意！】记得分别在易遇和顾时夜的仓库里，把这里的 lovey_v8_state 换成专属名字哦！
+        // 【注意！】记得分别在易遇和顾时夜的仓库里，把这里的标签换成专属名字哦！（比如 lovey_yiyu_state 或 lovey_sige_state）
         const STORAGE_KEY = 'lovey_yiyu_state'; 
 
         let appState = {
@@ -204,7 +216,7 @@
             chats: {
                 'chat_1': {
                     name: 'Lovey', avatar: '', wallpaper: '', neteaseCode: '', startDate: new Date().toISOString().split('T')[0], messages: [],
-                    words: ["亲爱的/宝宝", "晚安好梦", "今天好累求抱抱", "贴贴"], replySpeed: 5
+                    words: ["亲爱的/宝宝", "晚安好梦", "今天好累求抱抱", "贴贴"], replySpeed: 5, letters: []
                 }
             }
         };
@@ -212,8 +224,8 @@
         let currentChat = null; 
         let isTyping = false; 
         let ignoredCount = 0; 
-        let currentQuote = ''; // 保存当前引用的文本
-        let dropTimer = null; // 不定时回复的定时器
+        let currentQuote = ''; 
+        let dropTimer = null; 
 
         const statuses = ["忙碌", "睡觉", "吃饭", "想你", "发呆"];
         function changeStatus() {
@@ -223,12 +235,10 @@
             setTimeout(changeStatus, Math.floor(Math.random() * 5 + 3) * 60000);
         }
 
-        // --- 核心新增：不定时随机回复功能 ---
         function startDropTimer() {
             if (dropTimer) clearInterval(dropTimer);
             dropTimer = setInterval(() => {
                 if (isTyping || !currentChat.words.length || document.visibilityState === 'hidden') return;
-                // 每隔 1 分钟检测一次，有 10% 的概率主动给你发消息
                 if (Math.random() < 0.10) {
                     autoReply(true); 
                 }
@@ -241,13 +251,17 @@
                 try { appState = JSON.parse(saved); } catch(e) {}
             }
             if (!appState.chats || Object.keys(appState.chats).length === 0) {
-                 appState.chats = { 'chat_1': { name: 'Lovey', avatar: '', wallpaper: '', neteaseCode: '', startDate: new Date().toISOString().split('T')[0], messages: [], words: ["亲爱的"], replySpeed: 5 } };
+                 appState.chats = { 'chat_1': { name: 'Lovey', avatar: '', wallpaper: '', neteaseCode: '', startDate: new Date().toISOString().split('T')[0], messages: [], words: ["亲爱的"], replySpeed: 5, letters: [] } };
             }
+            if (!appState.globalEmojis) appState.globalEmojis = [];
+            
             if (!appState.chats[appState.activeId]) appState.activeId = Object.keys(appState.chats)[0];
             currentChat = appState.chats[appState.activeId];
             
+            if (!currentChat.letters) currentChat.letters = [];
+
             applyUI(); renderChat(); changeStatus(); checkLetterReply(); 
-            startDropTimer(); // 启动惊喜掉落定时器
+            startDropTimer(); 
         }
 
         function save() { 
@@ -294,19 +308,26 @@
             document.body.style.backgroundImage = currentChat.wallpaper ? `url(${currentChat.wallpaper})` : 'none';
             document.getElementById('wallpaper-url-input').value = currentChat.wallpaper || '';
             document.getElementById('date-input').value = currentChat.startDate;
-            document.getElementById('netease-input').value = currentChat.neteaseCode || '';
             document.getElementById('speed-input').value = currentChat.replySpeed || 5;
-            
-            if(currentChat.neteaseCode) {
-                document.getElementById('netease-container').innerHTML = currentChat.neteaseCode;
-            }
+            document.getElementById('netease-input').value = currentChat.neteaseCode || '';
             
             const diff = Math.floor(Math.abs(new Date() - new Date(currentChat.startDate)) / (1000*60*60*24)) + 1;
             document.getElementById('memorial-days').innerText = `第 ${diff} 天`;
             
             renderWordList();
+            renderEmojiList();
             renderContactList(); 
+            renderLetterHistory();
             isTyping = false;
+        }
+
+        // 🌟 终极恢复：救回被我误删的“渲染聊天记录”功能！🌟
+        function renderChat() { 
+            document.getElementById('chat-window').innerHTML = ''; 
+            if(currentChat && currentChat.messages) {
+                currentChat.messages.forEach(renderSingleMsg); 
+            }
+            scrollToBottom(); 
         }
 
         function renderContactList() {
@@ -324,10 +345,17 @@
         }
 
         function updateNetease(code) { currentChat.neteaseCode = code; save(); applyUI(); }
-        function toggleMusic() {
-            const container = document.getElementById('netease-container');
-            container.style.display = container.style.display === 'block' ? 'none' : 'block';
+        function toggleMusic() { 
+            if (currentChat.neteaseCode && currentChat.neteaseCode.trim() !== '') { 
+                const link = currentChat.neteaseCode.trim(); 
+                alert("正在为你唤起网易云音乐...\n去 APP 里点一下播放，然后切回来就可以啦！🎵");
+                window.open(link, '_blank'); 
+            } else { 
+                alert("抽屉空空如也！请先在【设置】的音乐框里，直接粘贴网易云的分享链接哦！"); 
+                toggleDrawer(); 
+            }
         }
+
         function updateSpeed(val) { 
             let speed = parseInt(val); 
             if(isNaN(speed) || speed < 0) speed = 5; 
@@ -344,13 +372,43 @@
             document.getElementById('word-list').innerHTML = currentChat.words.map((w, i) => `<div style="padding:8px; border-bottom:1px dashed #eee; font-size:13px">${w} <span style="color:#ffb6c1; cursor:pointer; float:right;" onclick="currentChat.words.splice(${i},1);save();renderWordList()">删</span></div>`).join(''); 
         }
 
-        // --- 核心新增：消息引用功能 ---
+        // --- 表情库功能恢复 ---
+        function addEmojiUrl() { 
+            const url = document.getElementById('emoji-url-input').value.trim(); 
+            if(url) { appState.globalEmojis.push(url); document.getElementById('emoji-url-input').value = ''; save(); renderEmojiList(); } 
+        }
+
+        document.getElementById('emoji-file').onchange = async function(e) {
+            const files = e.target.files; if (files.length === 0) return;
+            document.getElementById('emoji-list').innerHTML = "<p style='font-size:12px;color:var(--highlight);'>处理中...</p>";
+            for (let i = 0; i < files.length; i++) { try { const base64 = await compressImage(files[i]); appState.globalEmojis.push(base64); } catch (err) {} }
+            save(); renderEmojiList();
+        };
+
+        function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader(); reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image(); img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+                        const scale = img.width > 250 ? 250 / img.width : 1;
+                        canvas.width = img.width * scale; canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height); resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    }; img.onerror = reject;
+                };
+            });
+        }
+
+        function renderEmojiList() { 
+            document.getElementById('emoji-list').innerHTML = appState.globalEmojis.map((img, i) => `<div class="emoji-box" style="background-image:url(${img})" onclick="sendMsg('${img}', true, 'self')"><div class="del-badge" onclick="event.stopPropagation(); appState.globalEmojis.splice(${i},1);save();renderEmojiList()">×</div></div>`).join(''); 
+        }
+        function clearEmojis() { if (confirm(`确定要清空全局表情库吗？`)) { appState.globalEmojis = []; save(); renderEmojiList(); } }
+        // ----------------------
+
         function setQuote(text) {
-            // 去掉可能的 HTML 标签，只保留纯文本
             let plainText = text.replace(/<[^>]+>/g, '');
-            // 如果文本太长截取一下
             if (plainText.length > 20) plainText = plainText.substring(0, 20) + '...';
-            
             currentQuote = plainText;
             document.getElementById('quote-text').innerText = `🔗 引用: ${currentQuote}`;
             document.getElementById('quote-preview').style.display = 'flex';
@@ -360,15 +418,13 @@
             document.getElementById('quote-preview').style.display = 'none';
         }
 
-        function sendMsg(text, type='self') {
+        function sendMsg(text, isImg=false, type='self') {
             let finalMsg = text;
-            // 如果是自己发的消息，且存在引用内容，则打包在一起
-            if (type === 'self' && currentQuote) {
+            if (type === 'self' && currentQuote && !isImg) {
                 finalMsg = `<div class="quote-block">引用: ${currentQuote}</div>${text}`;
-                cancelQuote(); // 发送完清空引用
+                cancelQuote(); 
             }
-
-            const msg = { text: finalMsg, type, id: Date.now() };
+            const msg = { text: finalMsg, isImg: isImg, type, id: Date.now() };
             currentChat.messages.push(msg); renderSingleMsg(msg); save();
         }
 
@@ -382,19 +438,24 @@
             const timeStr = date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
             const timeSpan = `<span class="msg-time">${timeStr}</span>`;
             
-            // 为了防止转义，把需要引用的纯文本提取出来传给 onclick
-            const rawText = m.text.replace(/'/g, "\\'"); 
+            const rawText = m.isImg ? "[图片]" : m.text.replace(/'/g, "\\'"); 
+            const content = m.isImg ? `<img src="${m.text}" class="img-content" onload="scrollToBottom()">` : `<span>${m.text}</span>`;
             
-            row.innerHTML = m.type==='self' ? `<div class="bubble" onclick="setQuote('${rawText}')"><span>${m.text}</span>${timeSpan}</div>${av}` : `${av}<div class="bubble" onclick="setQuote('${rawText}')"><span>${m.text}</span>${timeSpan}</div>`;
+            row.innerHTML = m.type==='self' ? `<div class="bubble" onclick="setQuote('${rawText}')">${content}${timeSpan}</div>${av}` : `${av}<div class="bubble" onclick="setQuote('${rawText}')">${content}${timeSpan}</div>`;
+            
             win.appendChild(row); scrollToBottom();
         }
 
         function autoReply(isUnprompted = false) {
-            if (isTyping || !currentChat.words.length) return; 
+            if (isTyping) return; 
+            
+            // 组合文字和表情包的池子
+            const pool = [...currentChat.words.map(w=>({t:w,i:false})), ...appState.globalEmojis.map(e=>({t:e,i:true}))];
+            if(!pool.length) return;
+
             isTyping = true;
             document.getElementById('ai-status').innerText = "[正在输入...]";
             
-            // 如果是不定时掉落，思考时间变短（模拟突然想到你）
             const speedMs = isUnprompted ? 2000 : (currentChat.replySpeed || 5) * 1000;
 
             setTimeout(() => {
@@ -408,8 +469,8 @@
                         return;
                     }
 
-                    const item = currentChat.words[Math.floor(Math.random() * currentChat.words.length)];
-                    sendMsg(item, 'other');
+                    const item = pool[Math.floor(Math.random() * pool.length)];
+                    sendMsg(item.t, item.i, 'other');
                     sentCount++;
 
                     if (sentCount < replyCount) {
@@ -445,37 +506,81 @@
         function switchTab(t) { document.querySelectorAll('.tab-btn, .tab-content').forEach(el=>el.classList.remove('active')); event.target.classList.add('active'); document.getElementById(`tab-${t}`).classList.add('active'); }
         function toggleDrawer() { document.getElementById('library-drawer').classList.toggle('open'); }
 
+        // --- 核心升级：全新信件历史档案系统 ---
         function sendLetter() {
             const text = document.getElementById('letter-input').value.trim();
             if(!text) return;
-            const replyTime = Date.now() + Math.floor(Math.random() * 50000) + 10000; 
-            localStorage.setItem('lovey_letter', JSON.stringify({ content: text, replyTime: replyTime, replied: false }));
+            
+            // 模拟 10秒 到 40秒后回信（为了测试方便，不用等几小时啦）
+            const replyTime = Date.now() + Math.floor(Math.random() * 30000) + 10000; 
+            
+            currentChat.letters.push({
+                content: text,
+                sendTime: Date.now(),
+                replyTime: replyTime,
+                replyContent: null
+            });
+            save();
+            
             document.getElementById('letter-input').value = '';
+            renderLetterHistory();
             alert("信件已寄出，随风飘往他的方向...🕊️");
+        }
+
+        function renderLetterHistory() {
+            const box = document.getElementById('letter-history-box');
+            if(!currentChat.letters || currentChat.letters.length === 0) {
+                box.innerHTML = '<span style="color:#ccc; font-size:12px;">暂无过往信件...</span>';
+                return;
+            }
+            let html = '';
+            // 倒序渲染，最新的信件在最上面
+            currentChat.letters.slice().reverse().forEach(l => {
+                const d = new Date(l.sendTime);
+                const timeStr = `${d.getMonth()+1}月${d.getDate()}日 ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+                
+                let replyHtml = '<div style="color:#a88790; font-size:11px; margin-top:8px;">[ 他正在写回信中... 🕊️ ]</div>';
+                
+                if (l.replyContent) {
+                     const cardsHtml = l.replyContent.split('').map(char => {
+                        const rotate = (Math.random() - 0.5) * 4; 
+                        return `<span class="word-card" style="--random-rotation:${rotate}deg; transform: rotate(var(--random-rotation))">${char}</span>`;
+                    }).join('');
+                    replyHtml = `<div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ffb6c1;">${cardsHtml}</div>`;
+                }
+                
+                html += `<div style="background:rgba(255,255,255,0.7); padding:12px; border-radius:12px; margin-bottom:12px; box-shadow:0 2px 8px rgba(255,182,193,0.2); border:1px solid #fff;">
+                    <div style="font-size:10px; color:var(--highlight); margin-bottom:6px; font-weight:bold;">我 · ${timeStr}</div>
+                    <div style="font-size:13px; color:var(--text-color); line-height:1.5;">${l.content}</div>
+                    ${replyHtml}
+                </div>`;
+            });
+            box.innerHTML = html;
         }
 
         function checkLetterReply() {
             setInterval(() => {
-                const letterStr = localStorage.getItem('lovey_letter');
-                if(letterStr) {
-                    const letter = JSON.parse(letterStr);
-                    if(!letter.replied && Date.now() > letter.replyTime) {
-                        letter.replied = true;
-                        localStorage.setItem('lovey_letter', JSON.stringify(letter));
-                        
+                if(!currentChat || !currentChat.letters) return;
+                
+                let updated = false;
+                currentChat.letters.forEach(letter => {
+                    if (!letter.replyContent && Date.now() > letter.replyTime) {
                         const pool = ["想你了", "乖，我一直都在", "收到了，抱抱", "不许胡思乱想", "等我回来"];
-                        const replyText = pool[Math.floor(Math.random() * pool.length)];
-                        
-                        const container = document.getElementById('letter-reply-box');
-                        const cardsHtml = replyText.split('').map(char => {
-                            const rotate = (Math.random() - 0.5) * 2; 
-                            return `<span class="word-card" style="--random-rotation:${rotate}">${char}</span>`;
-                        }).join('');
-                        container.innerHTML = cardsHtml;
+                        letter.replyContent = pool[Math.floor(Math.random() * pool.length)];
+                        updated = true;
+                    }
+                });
+                
+                if(updated) {
+                    save();
+                    // 如果刚好打开着信箱面板，就实时刷新
+                    if(document.getElementById('tab-letter').classList.contains('active')){
+                        renderLetterHistory();
                     }
                 }
             }, 5000); 
         }
+        // ------------------------------------
 
         const msgInput = document.getElementById('msg-input');
         const sendBtn = document.getElementById('send-btn');
@@ -488,7 +593,7 @@
         sendBtn.onclick = () => { 
             const text = msgInput.value.trim();
             if (text) { 
-                sendMsg(text); msgInput.value = ''; 
+                sendMsg(text, false, 'self'); msgInput.value = ''; 
                 sendBtn.innerText = '让他回'; sendBtn.style.color = 'var(--light-text)';
                 
                 if (Math.random() < 0.3 && ignoredCount < 3) {
@@ -499,14 +604,6 @@
             } else { if (!isTyping) autoReply(); }
         };
         msgInput.onkeypress = (e) => { if(e.key==='Enter') sendBtn.click(); };
-
-        // 页面切换时同步离线检测
-        document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === 'visible' && !isTyping && currentChat.words.length > 0) {
-                // 如果页面从后台切回来，有 20% 概率触发他的消息（就像你刚打开手机他就发来信息一样）
-                if (Math.random() < 0.2) autoReply(true);
-            }
-        });
 
         init();
     </script>
